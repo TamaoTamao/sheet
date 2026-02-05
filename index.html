@@ -1,10 +1,43 @@
-<html>
-  <body>
-    <head>
-      
-    </head>
-    <srcypt>
-    
-    </srcypt>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <div class="language-selector">
+            <button class="lang-btn">RU</button>
+            <button class="lang-btn">EN</button>
+            <button class="lang-btn">ES</button>
+            <button class="lang-btn">FR</button>
+        </div>
+        <button class="edit-mode-toggle">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="lens"></div>
+        </button>
+    </header>
+    <main>
+        <h1>Привет, мир!</h1>
+        <p>Здесь будет ваш контент.</p>
+        <div class="toast-notification hidden">Режим переключен!</div>
+        <div class="tooltip">Наведите курсор для подсказки</div>
+    </main>
+    <footer>
+        <p>&copy; 2026 TamaoTamao. Все права защищены.</p>
+    </footer>
+    <script>
+        // JavaScript for edit mode toggle and notifications
+        document.querySelector('.edit-mode-toggle').addEventListener('click', function() {
+            const toast = document.querySelector('.toast-notification');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        });
+        // Additional JavaScript reorganized for clarity
+    </script>
+</body>
 </html>
