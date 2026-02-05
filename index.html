@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D20 Лист персонажа</title>
+    <style>
+        /* Базовые стили корневого элемента */
+        :root {
+            --primary-parchment: #f4e8d0;
+            --accent-vibrant-red: #e63946;
+            --accent-vibrant-green: #06d6a0;
+            --dimmed-opacity: 0.35;
+            --lens-border-width: 3px;
+            --transition-smooth: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Контейнер основного содержимого */
+        .character-sheet-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--primary-parchment);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            position: relative;
+        }
+
+        /* Шапка с заголовком */
+        .sheet-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 60px;
+        }
+
+        .sheet-header h1 {
+            font-size: 2.5em;
+            color: #2c1810;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Контейнер для элементов управления в правом верхнем углу */
+        .top-right-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        /* Универсальная система кнопок с кружочками */
+        .orb-switcher-base {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50px;
+            padding: 8px;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .orb-switcher-base:hover {
+            transform: scale(1.05);
+        }
+
+        /* Кнопка переключения режимов (90% от оригинального размера) */
+        .mode-switcher {
+            width: 90px;
+            height: 45px;
+        }
+
+        /* Внутренний контейнер для кружочков режима */
+        .mode-orbs-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 5px;
+            position: relative;
+        }
+
+        /* Кружочки для режимов */
+        .mode-orb {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 2;
+        }
+
+        .mode-orb.dimmed {
+            opacity: var(--dimmed-opacity);
+            transform: scale(0.5);
+        }
+
+        .mode-orb.active-orb {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .mode-orb.read-indicator {
+            background: var(--accent-vibrant-red);
+            color: white;
+        }
+
+        .mode-orb.edit-indicator {
+            background: var(--accent-vibrant-green);
+            color: white;
+        }
+
+        /* Увеличительное стекло для режимов */
+        .mode-lens {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: var(--lens-border-width) solid #333;
+            border-radius: 50%;
+            transition: var(--transition-smooth);
+            pointer-events: none;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .mode-lens.lens-at-read {
+            left: 5px;
+        }
+
+        .mode-lens.lens-at-edit {
+            right: 5px;
+        }
+
+        /* Кнопка выбора языка */
+        .language-switcher {
+            width: 75px;
+            height: 75px;
+        }
+
+        /* Сетка 2x2 для языков */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 5px;
+            height: 100%;
+            padding: 5px;
+            position: relative;
+        }
+
+        /* Кружочек для отдельного языка */
+        .lang-orb {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 2;
+        }
+
+        .lang-orb.dimmed {
+            opacity: var(--dimmed-opacity);
+            transform: scale(0.5);
+        }
+
+        .lang-orb.active-orb {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .lang-orb.ru-lang { background: #0077c8; color: white; }
+        .lang-orb.en-lang { background: #c8102e; color: white; }
+        .lang-orb.es-lang { background: #ffc400; color: #c60b1e; }
+        .lang-orb.fr-lang { background: #002395; color: white; }
+
+        /* Увеличительное стекло для языков */
+        .lang-lens {
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            border: var(--lens-border-width) solid #333;
+            border-radius: 50%;
+            transition: var(--transition-smooth);
+            pointer-events: none;
+            z-index: 1;
+            background: transparent;
+        }
+
+        /* Позиции линзы для каждого языка */
+        .lang-lens.at-ru { top: 5px; left: 5px; }
+        .lang-lens.at-en { top: 5px; right: 5px; }
+        .lang-lens.at-es { bottom: 5px; left: 5px; }
+        .lang-lens.at-fr { bottom: 5px; right: 5px; }
+
+        /* Тултип при наведении */
+        .hover-tooltip {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(244, 232, 208, 0.95);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #c4a57b;
+            z-index: 1000;
+        }
+
+        .orb-switcher-base:hover .hover-tooltip {
+            opacity: 1;
+        }
+
+        /* Всплывающее уведомление по центру */
+        .center-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 232, 208, 0.95);
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid #c4a57b;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .center-notification.show-notification {
+            opacity: 1;
+        }
+
+        /* Поля ввода для листа персонажа */
+        .character-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-label {
+            font-weight: bold;
+            color: #2c1810;
+            font-size: 14px;
+        }
+
+        .field-input {
+            padding: 10px;
+            border: 2px solid #c4a57b;
+            border-radius: 6px;
+            background: white;
+            font-family: inherit;
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: #8b7355;
+        }
+
+        /* Мобильная версия */
+        @media (max-width: 768px) {
+            .sheet-header {
+                padding-top: 80px;
+            }
+
+            .sheet-header h1 {
+                font-size: 1.8em;
+            }
+
+            .top-right-controls {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .character-sheet-wrapper {
+                padding: 20px;
+            }
+
+            .character-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sheet-header {
+                padding-top: 100px;
+            }
+
+            .sheet-header h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Всплывающее уведомление -->
+    <div id="centerNotification" class="center-notification"></div>
+
+    <!-- Основной контейнер листа персонажа -->
+    <div class="character-sheet-wrapper">
+        <!-- Элементы управления в правом верхнем углу -->
+        <div class="top-right-controls">
+            <!-- Кнопка переключения режима редактирования/чтения -->
+            <div class="orb-switcher-base mode-switcher" id="modeSwitcher">
+                <div class="mode-orbs-container">
+                    <div class="mode-orb read-indicator active-orb" id="readOrb">👁️</div>
+                    <div class="mode-orb edit-indicator dimmed" id="editOrb">✏️</div>
+                    <div class="mode-lens lens-at-read" id="modeLens"></div>
+                </div>
+                <div class="hover-tooltip" id="modeTooltip"></div>
+            </div>
+
+            <!-- Кнопка выбора языка -->
+            <div class="orb-switcher-base language-switcher" id="langSwitcher">
+                <div class="lang-grid">
+                    <div class="lang-orb ru-lang active-orb" id="ruOrb">RU</div>
+                    <div class="lang-orb en-lang dimmed" id="enOrb">EN</div>
+                    <div class="lang-orb es-lang dimmed" id="esOrb">ES</div>
+                    <div class="lang-orb fr-lang dimmed" id="frOrb">FR</div>
+                    <div class="lang-lens at-ru" id="langLens"></div>
+                </div>
+                <div class="hover-tooltip" id="langTooltip"></div>
+            </div>
+        </div>
+
+        <!-- Заголовок листа -->
+        <div class="sheet-header">
+            <h1 id="mainTitle">D20 лист персонажа</h1>
+        </div>
+
+        <!-- Поля для ввода данных персонажа -->
+        <div class="character-fields">
+            <div class="field-group">
+                <label class="field-label" data-i18n="charName">Имя персонажа</label>
+                <input type="text" class="field-input" id="charName">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charClass">Класс</label>
+                <input type="text" class="field-input" id="charClass">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charLevel">Уровень</label>
+                <input type="number" class="field-input" id="charLevel" min="1" max="20">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charRace">Раса</label>
+                <input type="text" class="field-input" id="charRace">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charBackground">Предыстория</label>
+                <input type="text" class="field-input" id="charBackground">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charAlignment">Мировоззрение</label>
+                <input type="text" class="field-input" id="charAlignment">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charStrength">Сила</label>
+                <input type="number" class="field-input" id="charStrength" min="1" max="30">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charDexterity">Ловкость</label>
+                <input type="number" class="field-input" id="charDexterity" min="1" max="30">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charConstitution">Телосложение</label>
+                <input type="number" class="field-input" id="charConstitution" min="1" max="30">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charIntelligence">Интеллект</label>
+                <input type="number" class="field-input" id="charIntelligence" min="1" max="30">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charWisdom">Мудрость</label>
+                <input type="number" class="field-input" id="charWisdom" min="1" max="30">
+            </div>
+            <div class="field-group">
+                <label class="field-label" data-i18n="charCharisma">Харизма</label>
+                <input type="number" class="field-input" id="charCharisma" min="1" max="30">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Словарь переводов для всех языков
+        const translationDictionary = {
+            ru: {
+                mainTitle: 'D20 лист персонажа',
+                charName: 'Имя персонажа',
+                charClass: 'Класс',
+                charLevel: 'Уровень',
+                charRace: 'Раса',
+                charBackground: 'Предыстория',
+                charAlignment: 'Мировоззрение',
+                charStrength: 'Сила',
+                charDexterity: 'Ловкость',
+                charConstitution: 'Телосложение',
+                charIntelligence: 'Интеллект',
+                charWisdom: 'Мудрость',
+                charCharisma: 'Харизма',
+                modeEdit: 'Режим редактирования',
+                modeRead: 'Режим чтения',
+                langSelected: 'Выбран русский язык',
+                langRU: 'русский язык',
+                langEN: 'английский язык',
+                langFR: 'французский язык',
+                langES: 'испанский язык'
+            },
+            en: {
+                mainTitle: 'D20 Character Sheet',
+                charName: 'Character Name',
+                charClass: 'Class',
+                charLevel: 'Level',
+                charRace: 'Race',
+                charBackground: 'Background',
+                charAlignment: 'Alignment',
+                charStrength: 'Strength',
+                charDexterity: 'Dexterity',
+                charConstitution: 'Constitution',
+                charIntelligence: 'Intelligence',
+                charWisdom: 'Wisdom',
+                charCharisma: 'Charisma',
+                modeEdit: 'Edit mode',
+                modeRead: 'Read mode',
+                langSelected: 'English selected',
+                langRU: 'Russian',
+                langEN: 'English',
+                langFR: 'French',
+                langES: 'Spanish'
+            },
+            fr: {
+                mainTitle: 'Feuille de personnage D20',
+                charName: 'Nom du personnage',
+                charClass: 'Classe',
+                charLevel: 'Niveau',
+                charRace: 'Race',
+                charBackground: 'Historique',
+                charAlignment: 'Alignement',
+                charStrength: 'Force',
+                charDexterity: 'Dextérité',
+                charConstitution: 'Constitution',
+                charIntelligence: 'Intelligence',
+                charWisdom: 'Sagesse',
+                charCharisma: 'Charisme',
+                modeEdit: 'Mode édition',
+                modeRead: 'Mode lecture',
+                langSelected: 'Français sélectionné',
+                langRU: 'Russe',
+                langEN: 'Anglais',
+                langFR: 'Français',
+                langES: 'Espagnol'
+            },
+            es: {
+                mainTitle: 'Hoja de personaje D20',
+                charName: 'Nombre del personaje',
+                charClass: 'Clase',
+                charLevel: 'Nivel',
+                charRace: 'Raza',
+                charBackground: 'Trasfondo',
+                charAlignment: 'Alineamiento',
+                charStrength: 'Fuerza',
+                charDexterity: 'Destreza',
+                charConstitution: 'Constitución',
+                charIntelligence: 'Inteligencia',
+                charWisdom: 'Sabiduría',
+                charCharisma: 'Carisma',
+                modeEdit: 'Modo edición',
+                modeRead: 'Modo lectura',
+                langSelected: 'Español seleccionado',
+                langRU: 'Ruso',
+                langEN: 'Inglés',
+                langFR: 'Francés',
+                langES: 'Español'
+            }
+        };
+
+        // Состояние приложения
+        const appState = {
+            currentLang: 'ru',
+            isEditMode: false,
+            languageSequence: ['ru', 'en', 'es', 'fr']
+        };
+
+        // Элементы DOM
+        const domRefs = {
+            modeSwitcher: document.getElementById('modeSwitcher'),
+            readOrb: document.getElementById('readOrb'),
+            editOrb: document.getElementById('editOrb'),
+            modeLens: document.getElementById('modeLens'),
+            modeTooltip: document.getElementById('modeTooltip'),
+            langSwitcher: document.getElementById('langSwitcher'),
+            ruOrb: document.getElementById('ruOrb'),
+            enOrb: document.getElementById('enOrb'),
+            esOrb: document.getElementById('esOrb'),
+            frOrb: document.getElementById('frOrb'),
+            langLens: document.getElementById('langLens'),
+            langTooltip: document.getElementById('langTooltip'),
+            centerNotification: document.getElementById('centerNotification'),
+            allInputs: document.querySelectorAll('.field-input')
+        };
+
+        // Функция отображения всплывающего уведомления
+        function displayCenterNotification(messageText) {
+            domRefs.centerNotification.textContent = messageText;
+            domRefs.centerNotification.classList.add('show-notification');
+            
+            setTimeout(() => {
+                domRefs.centerNotification.classList.remove('show-notification');
+            }, 1000);
+        }
+
+        // Функция применения переводов
+        function applyTranslations() {
+            const currentTranslations = translationDictionary[appState.currentLang];
+            
+            // Обновление заголовка
+            document.getElementById('mainTitle').textContent = currentTranslations.mainTitle;
+            
+            // Обновление всех элементов с data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const translationKey = element.getAttribute('data-i18n');
+                if (currentTranslations[translationKey]) {
+                    element.textContent = currentTranslations[translationKey];
+                }
+            });
+            
+            // Обновление тултипа режима
+            updateModeTooltip();
+            
+            // Обновление тултипа языка
+            updateLangTooltip();
+        }
+
+        // Обновление тултипа режима
+        function updateModeTooltip() {
+            const currentTranslations = translationDictionary[appState.currentLang];
+            domRefs.modeTooltip.textContent = appState.isEditMode 
+                ? currentTranslations.modeEdit 
+                : currentTranslations.modeRead;
+        }
+
+        // Обновление тултипа языка
+        function updateLangTooltip() {
+            const currentTranslations = translationDictionary[appState.currentLang];
+            domRefs.langTooltip.textContent = currentTranslations.langSelected;
+        }
+
+        // Переключение режима редактирования/чтения
+        function toggleEditMode() {
+            appState.isEditMode = !appState.isEditMode;
+            
+            const currentTranslations = translationDictionary[appState.currentLang];
+            
+            if (appState.isEditMode) {
+                // Режим редактирования активен
+                domRefs.readOrb.classList.remove('active-orb');
+                domRefs.readOrb.classList.add('dimmed');
+                domRefs.editOrb.classList.remove('dimmed');
+                domRefs.editOrb.classList.add('active-orb');
+                domRefs.modeLens.classList.remove('lens-at-read');
+                domRefs.modeLens.classList.add('lens-at-edit');
+                
+                // Включение возможности редактирования
+                domRefs.allInputs.forEach(input => {
+                    input.removeAttribute('readonly');
+                });
+                
+                displayCenterNotification(currentTranslations.modeEdit);
+            } else {
+                // Режим чтения активен
+                domRefs.editOrb.classList.remove('active-orb');
+                domRefs.editOrb.classList.add('dimmed');
+                domRefs.readOrb.classList.remove('dimmed');
+                domRefs.readOrb.classList.add('active-orb');
+                domRefs.modeLens.classList.remove('lens-at-edit');
+                domRefs.modeLens.classList.add('lens-at-read');
+                
+                // Блокировка редактирования
+                domRefs.allInputs.forEach(input => {
+                    input.setAttribute('readonly', 'readonly');
+                });
+                
+                displayCenterNotification(currentTranslations.modeRead);
+            }
+            
+            updateModeTooltip();
+        }
+
+        // Переключение языка
+        function switchToNextLanguage() {
+            const currentIndex = appState.languageSequence.indexOf(appState.currentLang);
+            const nextIndex = (currentIndex + 1) % appState.languageSequence.length;
+            const nextLang = appState.languageSequence[nextIndex];
+            
+            // Маппинг языков на элементы
+            const orbMapping = {
+                'ru': { orb: domRefs.ruOrb, lensClass: 'at-ru' },
+                'en': { orb: domRefs.enOrb, lensClass: 'at-en' },
+                'es': { orb: domRefs.esOrb, lensClass: 'at-es' },
+                'fr': { orb: domRefs.frOrb, lensClass: 'at-fr' }
+            };
+            
+            // Деактивация текущего языка
+            const currentOrbData = orbMapping[appState.currentLang];
+            currentOrbData.orb.classList.remove('active-orb');
+            currentOrbData.orb.classList.add('dimmed');
+            
+            // Активация следующего языка
+            const nextOrbData = orbMapping[nextLang];
+            nextOrbData.orb.classList.remove('dimmed');
+            nextOrbData.orb.classList.add('active-orb');
+            
+            // Перемещение линзы
+            domRefs.langLens.className = 'lang-lens ' + nextOrbData.lensClass;
+            
+            // Обновление состояния
+            appState.currentLang = nextLang;
+            
+            // Применение переводов
+            applyTranslations();
+            
+            // Отображение уведомления
+            const currentTranslations = translationDictionary[nextLang];
+            displayCenterNotification(currentTranslations.langSelected);
+        }
+
+        // Инициализация обработчиков событий
+        domRefs.modeSwitcher.addEventListener('click', toggleEditMode);
+        domRefs.langSwitcher.addEventListener('click', switchToNextLanguage);
+
+        // Начальная инициализация
+        (function initialize() {
+            // Применение начальных переводов
+            applyTranslations();
+            
+            // Установка начального режима чтения (поля заблокированы)
+            domRefs.allInputs.forEach(input => {
+                input.setAttribute('readonly', 'readonly');
+            });
+        })();
+    </script>
+</body>
+</html>
