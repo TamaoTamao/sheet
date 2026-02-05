@@ -121,6 +121,9 @@
   opacity: 0.5;
   background: var(--color-parchment-darker);
   color: var(--color-parchment);
+     border: 1px solid rgba(0,0,0,0.9);
+  box-shadow: 0 1px 2px rgba(44,24,16,0.18), inset 0 0 0 1px rgba(0,0,0,0.03);
+  border-radius: 50%;
 }
 
 /* lens slightly larger than circle to form outline */
@@ -135,6 +138,30 @@
   box-shadow: 0 1px 0 var(--color-parchment);
   transition: left 180ms ease, top 180ms ease;
   z-index: 10;
+}
+
+        /* Mode‑specific colors: only for the mode toggle (read / edit) */
+/* Read = зелёный, Edit = красный (active state) */
+.mode-toggle .circle[data-mode="read"].active {
+  background: var(--color-hp-green);
+  color: var(--color-parchment);
+}
+.mode-toggle .circle[data-mode="edit"].active {
+  background: var(--color-accent-red);
+  color: var(--color-parchment);
+}
+
+/* Optionally ensure inactive mode visuals (applies to mode toggle too) */
+.mode-toggle .circle.inactive {
+  background: var(--color-parchment-darker) !important;
+  color: var(--color-parchment) !important;
+  opacity: 0.5;
+  transform: scale(0.5);
+}
+
+/* Keep language toggle colors unchanged — ensure generic .toggle-core .circle.active remains in effect for lang */
+.lang-toggle .circle.active {
+  /* Intentionally empty — fall back to .toggle-core .circle.active (gold) */
 }
 
 /* Inline tooltip style (JS toggles presence) */
