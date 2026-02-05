@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Персонаж - Интерактивный лист</title>
+    <link rel="stylesheet" href="character-sheet.css">
+</head>
+<body>
+    <main class="rpg-workspace">
+        <aside class="control-panel">
+            <h1>🎲 RPG Лист</h1>
+            <nav class="action-menu">
+                <button class="action-control persist-data" data-action="persist">Сохранить прогресс</button>
+                <button class="action-control restore-data" data-action="restore">Восстановить данные</button>
+                <button class="action-control reset-data" data-action="reset">Сброс листа</button>
+                <button class="action-control roll-dice" data-action="roll">🎲 Бросок кубика</button>
+            </nav>
+        </aside>
+
+        <article class="hero-profile">
+            <section class="identity-block">
+                <h2>Информация о герое</h2>
+                <div class="field-container">
+                    <div class="input-wrapper">
+                        <label class="field-label">Имя героя</label>
+                        <input type="text" class="text-field" data-field="heroName" placeholder="Как зовут вашего героя?">
+                    </div>
+                </div>
+                <div class="triple-field">
+                    <div class="input-wrapper">
+                        <label class="field-label">Профессия</label>
+                        <input type="text" class="text-field" data-field="profession" placeholder="Рыцарь, Волшебник...">
+                    </div>
+                    <div class="input-wrapper">
+                        <label class="field-label">Ступень</label>
+                        <input type="number" class="num-field" data-field="tier" value="1" min="1" max="99">
+                    </div>
+                    <div class="input-wrapper">
+                        <label class="field-label">Происхождение</label>
+                        <input type="text" class="text-field" data-field="ancestry" placeholder="Народ, раса...">
+                    </div>
+                </div>
+            </section>
+
+            <section class="core-attributes">
+                <h2>Основные атрибуты</h2>
+                <div class="attribute-matrix"></div>
+            </section>
+
+            <section class="vitality-defense">
+                <h2>Жизненная сила и защита</h2>
+                <div class="vital-stats-row">
+                    <div class="vital-box">
+                        <span class="vital-label">Жизни</span>
+                        <div class="dual-value">
+                            <input type="number" class="vital-input current" data-field="currentLife" placeholder="0" min="0">
+                            <span class="separator">/</span>
+                            <input type="number" class="vital-input maximum" data-field="maxLife" placeholder="0" min="1">
+                        </div>
+                    </div>
+                    <div class="vital-box">
+                        <span class="vital-label">Защита</span>
+                        <input type="number" class="vital-input solo" data-field="defenseRating" value="10" min="0">
+                    </div>
+                    <div class="vital-box">
+                        <span class="vital-label">Быстрота</span>
+                        <input type="number" class="vital-input solo computed" data-field="quicknessBonus" readonly>
+                    </div>
+                    <div class="vital-box">
+                        <span class="vital-label">Движение</span>
+                        <input type="number" class="vital-input solo" data-field="movementRate" value="30" min="0">
+                    </div>
+                </div>
+            </section>
+
+            <section class="expertise-area">
+                <h2>Области экспертизы</h2>
+                <div class="expertise-grid"></div>
+            </section>
+
+            <section class="possessions">
+                <h2>Имущество и снаряжение</h2>
+                <div class="possession-manager">
+                    <div class="add-possession-bar">
+                        <input type="text" class="possession-input" placeholder="Название предмета..." data-field="newPossession">
+                        <button class="add-possession-btn">Добавить предмет</button>
+                    </div>
+                    <ul class="possession-registry"></ul>
+                </div>
+            </section>
+
+            <section class="special-traits">
+                <h2>Особые качества и таланты</h2>
+                <textarea class="large-text-area" data-field="specialAbilities" rows="5" placeholder="Перечислите особые способности, таланты, умения..."></textarea>
+            </section>
+
+            <section class="chronicles">
+                <h2>Хроники и записи</h2>
+                <textarea class="large-text-area" data-field="adventureLog" rows="5" placeholder="История персонажа, приключения, цели..."></textarea>
+            </section>
+        </article>
+    </main>
+
+    <div class="toast-notification" id="toastMessage"></div>
+    <div class="dice-roller-modal" id="diceModal">
+        <div class="modal-content">
+            <h3>Бросок кубика</h3>
+            <div class="dice-options">
+                <button class="dice-btn" data-sides="4">d4</button>
+                <button class="dice-btn" data-sides="6">d6</button>
+                <button class="dice-btn" data-sides="8">d8</button>
+                <button class="dice-btn" data-sides="10">d10</button>
+                <button class="dice-btn" data-sides="12">d12</button>
+                <button class="dice-btn" data-sides="20">d20</button>
+                <button class="dice-btn" data-sides="100">d100</button>
+            </div>
+            <div class="dice-result" id="diceResult"></div>
+            <button class="close-modal">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="character-engine.js"></script>
+</body>
+</html>
