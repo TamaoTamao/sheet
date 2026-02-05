@@ -70,15 +70,24 @@
             gap: 8px;
         }
         
-        .mode-toggle {
-            position: relative;
-            width: 34px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            pointer-events: auto;
-            cursor: pointer;
+        .mode-toggle { transform: scale(0.9); /* -10% */ padding: 4px; }
+        .mode-toggle .circle { width: 28px; height: 28px; }
+        .mode-toggle .circle.active { transform: scale(1.1); opacity: 1; background: var(--color-accent-gold); color: var(--color-parchment); }
+        .mode-toggle .circle.inactive { transform: scale(0.5); opacity: 0.5; background: var(--color-parchment-darker); color: var(--color-ink-light); }
+        .mode-toggle .lens {
+            width: 36px; height: 36px; /* circle 28 + 8px окантовка */
+            border-radius: 50%;
+            border: 2px solid rgba(44,24,16,0.95);
+            background: transparent;
+            box-shadow: 0 1px 0 var(--color-parchment);
+            position: absolute;
+            transition: left 180ms ease, top 180ms ease;
+            pointer-events: none;
+        }
+        
+        .mode-toggle .inline-tooltip { bottom: -44px; right: 0; }
+        @media (max-width: 640px) {
+            h1 { margin-top: 42px; }
         }
 
         .mode-circle {
@@ -121,7 +130,6 @@
             left: 4px;
         }
 
-        /* режим редактирования: html без .readonly */
         html:not(.readonly) .mode-circle-right {
             transform: scale(1.4);
             background-color: var(--color-success);
@@ -706,10 +714,14 @@
                 </div>
             </div>
 
-            <div class="mode-toggle" title="Режим чтения / редактирования">
-                <div class="mode-circle mode-circle-left"></div>
-                <div class="mode-circle mode-circle-right"></div>
-                <div class="mode-lens"></div>
+            <div class="mode-selector">
+                <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Mode toggle" data-state="edit">
+                    <div class="toggle-row" aria-hidden="true">
+                        <div class="circle" data-mode="read" aria-label="Режим чтения">Ч</div>
+                        <div class="circle" data-mode="edit" aria-label="Режим редактирования">Р</div>
+                    </div>
+                    <div class="lens" aria-hidden="true"></div>
+                </div>
             </div>
         </div>
 
@@ -912,6 +924,9 @@
     // ВСТРОЕННЫЕ СЛОВАРИ (on-board dictionaries)
     // --------------------
         
+// Full JS block for index.html (exclude external libraries). Paste into a <script> tag.
+// Implements translations, UI logic, tabs, data model, persistence, and unified toggles.
+
 const translations = {
     en: {
         title: 'D20 Character Sheet',
@@ -1180,23 +1195,20 @@ const translations = {
     const qs  = (sel)=>document.querySelector(sel);
     const qsa = (sel)=>Array.from(document.querySelectorAll(sel));
     
-    // общий скрытый измеритель ширины текста для описаний
+    // скрытый измеритель ширины текста
     const descMeasure = document.createElement('span');
-        descMeasure.style.visibility = 'hidden';
-        descMeasure.style.whiteSpace = 'pre';
-        descMeasure.style.position = 'absolute';
-        descMeasure.style.left = '-9999px';
-        document.body.appendChild(descMeasure);
+    descMeasure.style.visibility = 'hidden';
+    descMeasure.style.whiteSpace = 'pre';
+    descMeasure.style.position = 'absolute';
+    descMeasure.style.left = '-9999px';
+    document.body.appendChild(descMeasure);
 
-    // авто‑подгонка описаний: приоритет по ширине, потом по высоте
     function autosizeDescription(textarea){
         const style = getComputedStyle(textarea);
         descMeasure.style.font = style.font;
         descMeasure.textContent = textarea.value || textarea.placeholder || '';
-
-        const contentWidth = descMeasure.offsetWidth + 10; // небольшой запас
+        const contentWidth = descMeasure.offsetWidth + 10;
         textarea.style.width = contentWidth + 'px';
-
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
@@ -1220,10 +1232,7 @@ const translations = {
         ? repoProvidedTranslations
         : translations;
 
-    // --------------------
-    // ВКЛАДКИ (tabs)
-    // --------------------
-    
+    // Tabs
     function initTabs(){
         qsa('.tab').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1240,10 +1249,7 @@ const translations = {
         if (el) el.classList.add('active');
     }
 
-    // --------------------
-    // ОСНОВНЫЕ ХАРАКТЕРИСТИКИ (stats)
-    // --------------------
-    
+    // Stats
     function calcMod(score){
         const s = parseInt(score)||0;
         const m = Math.floor((s-10)/2);
@@ -1258,38 +1264,27 @@ const translations = {
         });
     }
 
-    // --------------------
-    // ШКАЛА ЗДОРОВЬЯ (HP bar)
-    // --------------------
-
-    function lerp(a, b, t){
-        return a + (b - a) * t;
-    }
-
+    // HP bar color
+    function lerp(a, b, t){ return a + (b - a) * t; }
     function lerpColor(c1, c2, t){
         const r = Math.round(lerp(c1[0], c2[0], t));
         const g = Math.round(lerp(c1[1], c2[1], t));
         const b = Math.round(lerp(c1[2], c2[2], t));
         return `rgb(${r}, ${g}, ${b})`;
     }
-
-    const HP_RED    = [0x8b, 0x2e, 0x1f]; // --color-accent-red
-    const HP_YELLOW = [0xc1, 0x9a, 0x3d]; // --color-hp-yellow
-    const HP_GREEN  = [0x4a, 0x7c, 0x4e]; // --color-hp-green
-
+    const HP_RED    = [0x8b, 0x2e, 0x1f];
+    const HP_YELLOW = [0xc1, 0x9a, 0x3d];
+    const HP_GREEN  = [0x4a, 0x7c, 0x4e];
     function getHpColorByPercent(ratio){
         const t = Math.max(0, Math.min(1, ratio));
-
-
         if (t <= 0.5){
-            const localT = t / 0.5;          // 0..1 от красного к жёлтому
+            const localT = t / 0.5;
             return lerpColor(HP_RED, HP_YELLOW, localT);
         } else {
-            const localT = (t - 0.5) / 0.5;  // 0..1 от жёлтого к зелёному
+            const localT = (t - 0.5) / 0.5;
             return lerpColor(HP_YELLOW, HP_GREEN, localT);
         }
     }
-
     function updateHealthBar(){
         const cur = parseInt(qs('#currentHP').value) || 0;
         const max = parseInt(qs('#maxHP').value) || 1;
@@ -1300,711 +1295,323 @@ const translations = {
         bar.style.backgroundColor = getHpColorByPercent(ratio);
     }
 
-    // --------------------
-    // НАВЫКИ (skills)
-    // --------------------
-    
+    // Render lists (skills / spells / inventory)
     function renderSkills(){
-    const container = qs('#skillsList');
-    container.innerHTML = '';
-    if (!character.skills.length){
-        const empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSkills) || 'No skills added';
-        container.appendChild(empty);
-        return;
-    }
-    character.skills.forEach((s, idx)=>{
-        const item = document.createElement('div');
-        item.className = 'item';
-
-        const info = document.createElement('div');
-        info.className = 'item-info';
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = s.name;
-        nameSpan.className = 'item-name';
-
-        const bonusInput = document.createElement('input');
-        bonusInput.type = 'text';
-        bonusInput.value = s.bonus || '';
-        bonusInput.className = 'item-details';
-        bonusInput.addEventListener('input', ()=>{ character.skills[idx].bonus = bonusInput.value; });
-
-        info.appendChild(nameSpan);
-        info.appendChild(bonusInput);
-
-        const actions = document.createElement('div');
-        actions.className = 'item-actions';
-
-        const del = document.createElement('button');
-        del.className = 'btn btn-small btn-danger btn-micro';
-        del.textContent = '×';
-        del.addEventListener('click', ()=>{
-            character.skills.splice(idx,1);
-            renderSkills();
+        const container = qs('#skillsList'); container.innerHTML = '';
+        if (!character.skills.length){
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSkills) || 'No skills added';
+            container.appendChild(empty);
+            return;
+        }
+        character.skills.forEach((s, idx)=>{
+            const item = document.createElement('div'); item.className = 'item';
+            const info = document.createElement('div'); info.className = 'item-info';
+            const nameSpan = document.createElement('span'); nameSpan.textContent = s.name; nameSpan.className = 'item-name';
+            const bonusInput = document.createElement('input'); bonusInput.type = 'text'; bonusInput.value = s.bonus || ''; bonusInput.className = 'item-details';
+            bonusInput.addEventListener('input', ()=>{ character.skills[idx].bonus = bonusInput.value; });
+            info.appendChild(nameSpan); info.appendChild(bonusInput);
+            const actions = document.createElement('div'); actions.className = 'item-actions';
+            const del = document.createElement('button'); del.className = 'btn btn-small btn-danger btn-micro'; del.textContent = '×';
+            del.addEventListener('click', ()=>{ character.skills.splice(idx,1); renderSkills(); });
+            actions.appendChild(del); item.appendChild(info); item.appendChild(actions); container.appendChild(item);
         });
-
-        actions.appendChild(del);
-        item.appendChild(info);
-        item.appendChild(actions);
-        container.appendChild(item);
-    });
     }
+    function onNewSkillNameInput(){ const name = qs('#newSkillName').value.trim(); qs('#skillsExtraFields').style.display = name ? 'block' : 'none'; }
+    function addSkill(){ const name = qs('#newSkillName').value.trim(); if (!name) return; const bonus = qs('#newSkillBonus').value.trim(); character.skills.push({ name, bonus }); qs('#newSkillName').value = ''; qs('#newSkillBonus').value = ''; qs('#skillsExtraFields').style.display = 'none'; renderSkills(); }
 
-    function onNewSkillNameInput(){
-        const name = qs('#newSkillName').value.trim();
-        qs('#skillsExtraFields').style.display = name ? 'block' : 'none';
-    }
-    function addSkill(){
-        const name = qs('#newSkillName').value.trim();
-        if (!name) return;
-        const bonus = qs('#newSkillBonus').value.trim();
-        character.skills.push({ name, bonus });
-        qs('#newSkillName').value = '';
-        qs('#newSkillBonus').value = '';
-        qs('#skillsExtraFields').style.display = 'none';
-        renderSkills();
-    }
-
-    // --------------------
-    // СПЕЛЛЫ (spells)
-    // --------------------
-    
     function renderSpells(){
-    const container = qs('#spellsList');
-    container.innerHTML = '';
-    if (!character.spells.length){
-        const empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSpells) || 'No spells added';
-        container.appendChild(empty);
-        return;
-    }
-
-    const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
-    const levelLabelText = t.spellLevel || 'Level';
-    const slotsLabelText = t.spellSlots || 'Slots';
-
-    character.spells.forEach((s, idx)=>{
-        const item  = document.createElement('div');
-        item.className = 'item';
-
-        const info  = document.createElement('div');
-        info.className = 'item-info';
-
-        const name  = document.createElement('div');
-        name.className = 'item-name';
-        name.textContent = s.name;
-
-        const details = document.createElement('div');
-        details.className = 'item-details';
-
-        const metaLine = document.createElement('div');
-
-        const lvlSpan = document.createElement('span');
-        lvlSpan.textContent = levelLabelText + ': ';
-        const lvlInput = document.createElement('input');
-        lvlInput.type  = 'text';
-        lvlInput.value = (s.level ?? 0).toString();
-        lvlInput.className = 'item-details';
-        lvlInput.style.width = '60px';
-        lvlInput.addEventListener('input', ()=>{
-            const raw = lvlInput.value.trim();
-            const parsed = parseInt(raw, 10);
-            character.spells[idx].level = Number.isNaN(parsed) ? 0 : parsed;
+        const container = qs('#spellsList'); container.innerHTML = '';
+        if (!character.spells.length){
+            const empty = document.createElement('div'); empty.className = 'empty-state';
+            empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSpells) || 'No spells added';
+            container.appendChild(empty); return;
+        }
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+        const levelLabelText = t.spellLevel || 'Level';
+        const slotsLabelText = t.spellSlots || 'Slots';
+        character.spells.forEach((s, idx)=>{
+            const item  = document.createElement('div'); item.className = 'item';
+            const info  = document.createElement('div'); info.className = 'item-info';
+            const name  = document.createElement('div'); name.className = 'item-name'; name.textContent = s.name;
+            const details = document.createElement('div'); details.className = 'item-details';
+            const metaLine = document.createElement('div');
+            const lvlSpan = document.createElement('span'); lvlSpan.textContent = levelLabelText + ': ';
+            const lvlInput = document.createElement('input'); lvlInput.type = 'text'; lvlInput.value = (s.level ?? 0).toString(); lvlInput.className = 'item-details'; lvlInput.style.width = '60px';
+            lvlInput.addEventListener('input', ()=>{ const raw = lvlInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].level = Number.isNaN(parsed) ? 0 : parsed; });
+            const sepSpan = document.createElement('span'); sepSpan.textContent = ' · ';
+            const slotsSpan = document.createElement('span'); slotsSpan.textContent = slotsLabelText + ': ';
+            const slotsInput = document.createElement('input'); slotsInput.type = 'text'; slotsInput.value = (s.slots ?? 0).toString(); slotsInput.className = 'item-details'; slotsInput.style.width = '60px';
+            slotsInput.addEventListener('input', ()=>{ const raw = slotsInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].slots = Number.isNaN(parsed) ? 0 : parsed; });
+            metaLine.appendChild(lvlSpan); metaLine.appendChild(lvlInput); metaLine.appendChild(sepSpan); metaLine.appendChild(slotsSpan); metaLine.appendChild(slotsInput);
+            const descArea = document.createElement('textarea'); descArea.value = s.desc || ''; descArea.rows  = 1; descArea.style.overflow = 'hidden'; descArea.style.resize   = 'none';
+            const autoDesc = ()=> autosizeDescription(descArea);
+            descArea.addEventListener('input', ()=>{ character.spells[idx].desc = descArea.value; autoDesc(); });
+            setTimeout(autoDesc, 0);
+            details.appendChild(metaLine); details.appendChild(descArea);
+            info.appendChild(name); info.appendChild(details);
+            const actions = document.createElement('div'); actions.className = 'item-actions';
+            const del = document.createElement('button'); del.className = 'btn btn-small btn-danger btn-micro'; del.textContent = '×';
+            del.addEventListener('click', ()=>{ character.spells.splice(idx,1); renderSpells(); });
+            actions.appendChild(del); item.appendChild(info); item.appendChild(actions); container.appendChild(item);
         });
-
-        const sepSpan = document.createElement('span');
-        sepSpan.textContent = ' · ';
-
-        const slotsSpan = document.createElement('span');
-        slotsSpan.textContent = slotsLabelText + ': ';
-        const slotsInput = document.createElement('input');
-        slotsInput.type  = 'text';
-        slotsInput.value = (s.slots ?? 0).toString();
-        slotsInput.className = 'item-details';
-        slotsInput.style.width = '60px';
-        slotsInput.addEventListener('input', ()=>{
-            const raw = slotsInput.value.trim();
-            const parsed = parseInt(raw, 10);
-            character.spells[idx].slots = Number.isNaN(parsed) ? 0 : parsed;
-        });
-
-        metaLine.appendChild(lvlSpan);
-        metaLine.appendChild(lvlInput);
-        metaLine.appendChild(sepSpan);
-        metaLine.appendChild(slotsSpan);
-        metaLine.appendChild(slotsInput);
-
-        const descArea = document.createElement('textarea');
-        descArea.value = s.desc || '';
-        descArea.rows  = 1;
-        descArea.style.overflow = 'hidden';
-        descArea.style.resize   = 'none';
-
-        const autoDesc = ()=> autosizeDescription(descArea);
-
-        descArea.addEventListener('input', ()=>{
-            character.spells[idx].desc = descArea.value;
-            autoDesc();
-        });
-
-        // начальная подгонка размера
-        setTimeout(autoDesc, 0);
-
-        details.appendChild(metaLine);
-        details.appendChild(descArea);
-
-        info.appendChild(name);
-        info.appendChild(details);
-
-        const actions = document.createElement('div');
-        actions.className = 'item-actions';
-
-        const del = document.createElement('button');
-        del.className = 'btn btn-small btn-danger btn-micro';
-        del.textContent = '×';
-        del.addEventListener('click', ()=>{
-            character.spells.splice(idx,1);
-            renderSpells();
-        });
-
-        actions.appendChild(del);
-        item.appendChild(info);
-        item.appendChild(actions);
-        container.appendChild(item);
-    });
     }
+    function onNewSpellNameInput(){ const name=qs('#newSpellName').value.trim(); qs('#spellsExtraFields').style.display = name ? 'block':'none'; }
+    function addSpell(){ const name=qs('#newSpellName').value.trim(); if(!name) return; const level=parseInt(qs('#newSpellLevel').value)||0; const slots=parseInt(qs('#newSpellSlots').value)||0; const desc=qs('#newSpellDesc').value.trim(); character.spells.push({name,level,slots,desc}); qs('#newSpellName').value=''; qs('#newSpellDesc').value=''; qs('#newSpellLevel').value=''; qs('#newSpellSlots').value=''; qs('#spellsExtraFields').style.display='none'; renderSpells(); }
 
-    // форма добавления заклинания
-    
-    function onNewSpellNameInput(){
-        const name=qs('#newSpellName').value.trim();
-        qs('#spellsExtraFields').style.display = name ? 'block':'none';
-    }
-    function addSpell(){
-        const name=qs('#newSpellName').value.trim();
-        if(!name) return;
-        const level=parseInt(qs('#newSpellLevel').value)||0;
-        const slots=parseInt(qs('#newSpellSlots').value)||0;
-        const desc=qs('#newSpellDesc').value.trim();
-        character.spells.push({name,level,slots,desc});
-        qs('#newSpellName').value='';
-        qs('#newSpellDesc').value='';
-        qs('#newSpellLevel').value='';
-        qs('#newSpellSlots').value='';
-        qs('#spellsExtraFields').style.display='none';
-        renderSpells();
-    }
-
-    // --------------------
-    // ИНВЕНТАРЬ (inventory)
-    // --------------------
-    
     function renderInventory(){
-    const container = qs('#inventoryList');
-    container.innerHTML = '';
-    if (!character.inventory.length){
-        const empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noItems) || 'Inventory is empty';
-        container.appendChild(empty);
-        return;
-    }
-
-    const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
-    const qtyLabelText   = t.itemQuantity || 'Quantity';
-    const priceLabelText = t.itemPrice   || 'Price';
-
-    character.inventory.forEach((it, idx)=>{
-        const item  = document.createElement('div');
-        item.className = 'item';
-
-        const info  = document.createElement('div');
-        info.className = 'item-info';
-
-        const name  = document.createElement('div');
-        name.className = 'item-name';
-        name.textContent = it.name;
-
-        const details = document.createElement('div');
-        details.className = 'item-details';
-
-        const qtyLine = document.createElement('div');
-        const qtyLabelSpan = document.createElement('span');
-        qtyLabelSpan.textContent = qtyLabelText + ': ';
-        const qtyInput = document.createElement('input');
-            qtyInput.type  = 'text';
-            qtyInput.value = (it.quantity ?? 1).toString();
-            qtyInput.className = 'item-details';
-            qtyInput.style.width = '70px';
-            qtyInput.addEventListener('input', ()=>{
-        const raw = qtyInput.value.trim();
-        const parsed = parseInt(raw, 10);
-        character.inventory[idx].quantity = Number.isNaN(parsed) ? 1 : parsed;
-        updateInventoryTotal();
+        const container = qs('#inventoryList'); container.innerHTML = '';
+        if (!character.inventory.length){
+            const empty = document.createElement('div'); empty.className = 'empty-state';
+            empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noItems) || 'Inventory is empty';
+            container.appendChild(empty); return;
+        }
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+        const qtyLabelText   = t.itemQuantity || 'Quantity';
+        const priceLabelText = t.itemPrice   || 'Price';
+        character.inventory.forEach((it, idx)=>{
+            const item  = document.createElement('div'); item.className = 'item';
+            const info  = document.createElement('div'); info.className = 'item-info';
+            const name  = document.createElement('div'); name.className = 'item-name'; name.textContent = it.name;
+            const details = document.createElement('div'); details.className = 'item-details';
+            const qtyLine = document.createElement('div');
+            const qtyLabelSpan = document.createElement('span'); qtyLabelSpan.textContent = qtyLabelText + ': ';
+            const qtyInput = document.createElement('input'); qtyInput.type  = 'text'; qtyInput.value = (it.quantity ?? 1).toString(); qtyInput.className = 'item-details'; qtyInput.style.width = '70px';
+            qtyInput.addEventListener('input', ()=>{ const raw = qtyInput.value.trim(); const parsed = parseInt(raw, 10); character.inventory[idx].quantity = Number.isNaN(parsed) ? 1 : parsed; updateInventoryTotal(); });
+            qtyLine.appendChild(qtyLabelSpan); qtyLine.appendChild(qtyInput);
+            const priceLine = document.createElement('div'); priceLine.textContent = priceLabelText + ': ' + (it.price || '');
+            const descArea = document.createElement('textarea'); descArea.value = it.desc || ''; descArea.rows  = 1; descArea.style.overflow = 'hidden'; descArea.style.resize   = 'none';
+            const autoItemDesc = ()=> autosizeDescription(descArea);
+            descArea.addEventListener('input', ()=>{ character.inventory[idx].desc = descArea.value; autoItemDesc(); });
+            setTimeout(autoItemDesc, 0);
+            details.appendChild(qtyLine); details.appendChild(priceLine); details.appendChild(descArea);
+            info.appendChild(name); info.appendChild(details);
+            const actions = document.createElement('div'); actions.className = 'item-actions';
+            const del = document.createElement('button'); del.className = 'btn btn-small btn-danger btn-micro'; del.textContent = '×';
+            del.addEventListener('click', ()=>{ character.inventory.splice(idx,1); renderInventory(); updateInventoryTotal(); });
+            actions.appendChild(del); item.appendChild(info); item.appendChild(actions); container.appendChild(item);
         });
-
-        qtyLine.appendChild(qtyLabelSpan);
-        qtyLine.appendChild(qtyInput);
-
-        const priceLine = document.createElement('div');
-        priceLine.textContent = priceLabelText + ': ' + (it.price || '');
-
-        const descArea = document.createElement('textarea');
-        descArea.value = it.desc || '';
-        descArea.rows  = 1;
-        descArea.style.overflow = 'hidden';
-        descArea.style.resize   = 'none';
-
-        const autoItemDesc = ()=> autosizeDescription(descArea);
-
-        descArea.addEventListener('input', ()=>{
-            character.inventory[idx].desc = descArea.value;
-            autoItemDesc();
-        });
-
-        setTimeout(autoItemDesc, 0);
-
-
-        details.appendChild(qtyLine);
-        details.appendChild(priceLine);
-        details.appendChild(descArea);
-
-        info.appendChild(name);
-        info.appendChild(details);
-
-        const actions = document.createElement('div');
-        actions.className = 'item-actions';
-
-        const del = document.createElement('button');
-        del.className = 'btn btn-small btn-danger btn-micro';
-        del.textContent = '×';
-        del.addEventListener('click', ()=>{
-            character.inventory.splice(idx,1);
-            renderInventory();
-            updateInventoryTotal();
-        });
-
-        actions.appendChild(del);
-        item.appendChild(info);
-        item.appendChild(actions);
-        container.appendChild(item);
-    });
-}
-
-    // форма добавления нового предмета
-
-    function onNewItemNameInput(){
-        const name=qs('#ItemName').value.trim();
-        qs('#itemsExtraFields').style.display = name ? 'block':'none';
     }
-    function addItem(){
-        const name=qs('#ItemName').value.trim();
-        if(!name) return;
-        const qty=parseInt(qs('#ItemQuantity').value)||1;
-        const price=qs('#ItemPrice').value.trim();
-        const desc=qs('#ItemDesc').value.trim();
-        character.inventory.push({name,quantity:qty,price,desc});
-        qs('#ItemName').value='';
-        qs('#ItemQuantity').value='';
-        qs('#ItemPrice').value='';
-        qs('#ItemDesc').value='';
-        qs('#itemsExtraFields').style.display='none';
-        renderInventory();
-        updateInventoryTotal();
-    }
+    function onNewItemNameInput(){ const name=qs('#ItemName').value.trim(); qs('#itemsExtraFields').style.display = name ? 'block':'none'; }
+    function addItem(){ const name=qs('#ItemName').value.trim(); if(!name) return; const qty=parseInt(qs('#ItemQuantity').value)||1; const price=qs('#ItemPrice').value.trim(); const desc=qs('#ItemDesc').value.trim(); character.inventory.push({name,quantity:qty,price,desc}); qs('#ItemName').value=''; qs('#ItemQuantity').value=''; qs('#ItemPrice').value=''; qs('#ItemDesc').value=''; qs('#itemsExtraFields').style.display='none'; renderInventory(); updateInventoryTotal(); }
 
-    // подсчёт стоимости инвентаря
-
-    function hasStem(word, stem, endings){
-        if (!word.includes(stem)) return false;
-        return endings.some(end => word.endsWith(end));
-    }
-    
+    function hasStem(word, stem, endings){ if (!word.includes(stem)) return false; return endings.some(end => word.endsWith(end)); }
     function parsePriceToGP(priceStr){
         if (!priceStr) return 0;
         const s = String(priceStr).toLowerCase();
-
-        // выцепляем число
         const numMatch = s.match(/([-+]?\d*\.?\d+)/);
         if (!numMatch) return 0;
-        const val = parseFloat(numMatch[1]);
-        if (isNaN(val)) return 0;
-
-        // словарь синонимов для единиц
+        const val = parseFloat(numMatch[1]); if (isNaN(val)) return 0;
         const unitMap = [
-            {
-                unit: 'pp',
-                match: str =>
-                    ['pp','platinum','пм', 'пп'].some(k => str.includes(k)) ||
-                    hasStem(str, 'платин', ['а','ы'])
-            },
-            {
-                unit: 'gp',
-                match: str =>
-                    ['gp','gold','зм', 'гп'].some(k => str.includes(k)) ||
-                    hasStem(str, 'золо', ['то','та','тых']) ||
-                    hasStem(str, 'голд', ['','а','ы']) ||
-                    hasStem(str, 'руб',  ['','ль','ля','лей'])
-            },
-            {
-                unit: 'sp',
-                match: str =>
-                    ['sp','silver','см', 'сп'].some(k => str.includes(k)) ||
-                    hasStem(str, 'серебр', ['о','а'])
-            },
-            {
-                unit: 'cp',
-                match: str =>
-                    ['cp','copper','мм', 'кп'].some(k => str.includes(k)) ||
-                    hasStem(str, 'мед',  ['ь','и','як','яка','яки','яков']) ||
-                    hasStem(str, 'коп', ['','ейка','ейки','еек'])
-            }
+            { unit: 'pp', match: str => ['pp','platinum','пм', 'пп'].some(k => str.includes(k)) || hasStem(str, 'платин', ['а','ы']) },
+            { unit: 'gp', match: str => ['gp','gold','зм', 'гп'].some(k => str.includes(k)) || hasStem(str, 'золо', ['то','та','тых']) || hasStem(str, 'голд', ['','а','ы']) || hasStem(str, 'руб',  ['','ль','ля','лей']) },
+            { unit: 'sp', match: str => ['sp','silver','см', 'сп'].some(k => str.includes(k)) || hasStem(str, 'серебр', ['о','а']) },
+            { unit: 'cp', match: str => ['cp','copper','мм', 'кп'].some(k => str.includes(k)) || hasStem(str, 'мед',  ['ь','и','як','яка','яки','яков']) || hasStem(str, 'коп', ['','ейка','ейки','еек']) }
         ];
-
-
-        let unit = 'gp'; // по умолчанию золото
-
+        let unit = 'gp';
         const found = unitMap.find(m => m.match(s));
         if (found) unit = found.unit;
-
         switch(unit){
             case 'pp': return val * COIN_RATES.pp;
             case 'sp': return val * COIN_RATES.sp;
             case 'cp': return val * COIN_RATES.cp;
             default:   return val;
+        }
     }
-}
-
     function updateInventoryTotal(){
-        const pp=parseFloat(qs('#pp').value)||0;
-        const gp=parseFloat(qs('#gp').value)||0;
-        const sp=parseFloat(qs('#sp').value)||0;
-        const cp=parseFloat(qs('#cp').value)||0;
+        const pp=parseFloat(qs('#pp').value)||0; const gp=parseFloat(qs('#gp').value)||0; const sp=parseFloat(qs('#sp').value)||0; const cp=parseFloat(qs('#cp').value)||0;
         let total = pp*COIN_RATES.pp + gp*COIN_RATES.gp + sp*COIN_RATES.sp + cp*COIN_RATES.cp;
-        character.inventory.forEach(it=>{
-            total += parsePriceToGP(it.price) * (it.quantity||1);
-        });
+        character.inventory.forEach(it=>{ total += parsePriceToGP(it.price) * (it.quantity||1); });
         qs('#inventoryTotal').value = total.toFixed(2) + ' gp';
     }
 
-    // --------------------
-    // РЕЖИМ РЕДАКТИРОВАНИЯ
-    // --------------------
-    
+    // Edit mode
     let isEditMode = true;
+    function applyEditMode(){ const root = document.documentElement; if (isEditMode) root.classList.remove('readonly'); else root.classList.add('readonly'); }
 
-    function applyEditMode(){
-        const root = document.documentElement;
-        if (isEditMode){
-            root.classList.remove('readonly');
-        } else {
-            root.classList.add('readonly');
-        }
-    }
-
-    function initEditToggle(){
-        const toggle = document.querySelector('.mode-toggle');
-        if (!toggle) return;
-        toggle.addEventListener('click', ()=>{
-            isEditMode = !isEditMode;
-            applyEditMode();
-        });
-    }
-  
-    // --------------------
-    // ИНТЕРНАЦИОНАЛИЗАЦИЯ (i18n)
-    // --------------------
-    
-    function initLanguage(){
-        const toggle = qs('#langToggle');
-        const dropdown = qs('#langDropdown');
-        if (toggle && dropdown){
-            toggle.addEventListener('click', ()=>{
-                dropdown.classList.toggle('active');
-            });
-            dropdown.querySelectorAll('button[data-lang]').forEach(btn=>{
-                btn.addEventListener('click', ()=>{
-                    const lang = btn.getAttribute('data-lang');
-                    setLanguage(lang);
-                    dropdown.classList.remove('active');
-                });
-            });
-        }
-        setLanguage(currentLanguage);
-    }
-
+    // i18n
+    function initLanguage(){ setLanguage(currentLanguage); }
     function setLanguage(lang){
         if (!translationsObj[lang]) lang = 'ru';
         currentLanguage = lang;
-        const langNames = { en:'EN', ru:'RU', fr:'FR', es:'ES' };
-        const toggle = qs('.language-toggle');
-        if (toggle) toggle.textContent = (langNames[lang]||lang.toUpperCase()) + ' ▼';
+        const toggle = qs('#langToggle'); if (toggle) toggle.dataset.selected = lang;
         updateLanguage();
     }
-
     function updateLanguage(){
-        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
-        if (!t) return;
-
-        const h1 = qs('h1');
-        if (h1) h1.textContent = t.title || 'D20 character sheet';
-
-        const tabs = qsa('.tab');
-        if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character';
-        if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills';
-        if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells';
-        if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
-
-        const charH2 = qsa('#character .section h2');
-        if (charH2[0]) charH2[0].textContent = t.basicInfo || '';
-        if (charH2[1]) charH2[1].textContent = t.stats || '';
-        if (charH2[2]) charH2[2].textContent = t.health || '';
-        if (charH2[3]) charH2[3].textContent = t.notes || '';
-
-        const skillsH2 = qs('#skills h2');
-        if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
-        const spellsH2 = qs('#spells h2');
-        if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
-        const invH2 = qs('#inventory h2');
-        if (invH2) invH2.textContent = t.inventory || 'Inventory';
-
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {}; if (!t) return;
+        const h1 = qs('h1'); if (h1) h1.textContent = t.title || 'D20 character sheet';
+        const tabs = qsa('.tab'); if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character'; if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills'; if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells'; if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
+        const charH2 = qsa('#character .section h2'); if (charH2[0]) charH2[0].textContent = t.basicInfo || ''; if (charH2[1]) charH2[1].textContent = t.stats || ''; if (charH2[2]) charH2[2].textContent = t.health || ''; if (charH2[3]) charH2[3].textContent = t.notes || '';
+        const skillsH2 = qs('#skills h2'); if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
+        const spellsH2 = qs('#spells h2'); if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
+        const invH2 = qs('#inventory h2'); if (invH2) invH2.textContent = t.inventory || 'Inventory';
         const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
         const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
-
-        setLabel('label[for="charName"]', t.charName || 'Character Name');
-        setPh('charName', t.charNamePlaceholder || 'Enter name');
-        setLabel('label[for="charRace"]', t.charRace || 'Race');
-        setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
-        setLabel('label[for="charClass"]', t.charClass || 'Class');
-        setPh('charClass', t.charClassPlaceholder || 'Warrior...');
-        setLabel('label[for="charLevel"]', t.charLevel || 'Level');
-
-        const statLabels = qsa('.stat-compact label');
-        if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR';
-        if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX';
-        if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON';
-        if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT';
-        if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS';
-        if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
-
-        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP');
-        setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP');
-        setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class');
-        setLabel('label[for="speed"]', t.speed || 'Speed');
-        setPh('notes', t.notesPlaceholder || 'Notes...');
-
-        const saveBtn = qs('#saveBtn');
-        if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character';
-        const loadBtn = qs('#loadBtn');
-        if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
-
-        // навыки
-            setPh('newSkillName', t.skillNamePlaceholder || 'New skill');
-            setPh('newSkillBonus', t.skillBonusPlaceholder || '+0');
-            const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
-
-        // заклинания
-            setPh('newSpellName', t.spellNamePlaceholder || 'New spell');
-            const spellLevelLabel = qs('label[for="newSpellLevel"]');
-            if (spellLevelLabel) spellLevelLabel.textContent = t.spellLevel || 'Level';
-            const spellSlotsLabel = qs('label[for="newSpellSlots"]');
-            if (spellSlotsLabel) spellSlotsLabel.textContent = t.spellSlots || 'Slots (total)';
-            const spellDescLabel = qs('label[for="newSpellDesc"]');
-            if (spellDescLabel) spellDescLabel.textContent = t.spellDesc || 'Description';
-            setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect');
-            const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
-
-        // Inventory add-form
-            setPh('ItemName', t.itemNamePlaceholder || 'New item');
-            setPh('ItemPrice', t.itemPricePlaceholder || 'some gp');
-            setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties');
-            const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
-
-        // монеты и общая сумма
-            setLabel('label[for="pp"]', t.coinsPP || 'Platinum');
-            setLabel('label[for="gp"]', t.coinsGP || 'Gold');
-            setLabel('label[for="sp"]', t.coinsSP || 'Silver');
-            setLabel('label[for="cp"]', t.coinsCP || 'Copper');
-            setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
-
-        // Quantity and numeric placeholders
-            setPh('ItemQuantity', t.itemQuantity || 'Quantity');
-            const spellLevelInput = qs('#newSpellLevel');
-            if (spellLevelInput) spellLevelInput.placeholder = t.spellLevel || 'Level';
-            const spellSlotsInput = qs('#newSpellSlots');
-            if (spellSlotsInput) spellSlotsInput.placeholder = t.spellSlots || 'Slots (total)';
-
+        setLabel('label[for="charName"]', t.charName || 'Character Name'); setPh('charName', t.charNamePlaceholder || 'Enter name');
+        setLabel('label[for="charRace"]', t.charRace || 'Race'); setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
+        setLabel('label[for="charClass"]', t.charClass || 'Class'); setPh('charClass', t.charClassPlaceholder || 'Warrior...');
+        const statLabels = qsa('.stat-compact label'); if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR'; if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX'; if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON'; if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT'; if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS'; if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
+        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP'); setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP'); setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class'); setLabel('label[for="speed"]', t.speed || 'Speed'); setPh('notes', t.notesPlaceholder || 'Notes...');
+        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character'; const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
+        setPh('newSkillName', t.skillNamePlaceholder || 'New skill'); setPh('newSkillBonus', t.skillBonusPlaceholder || '+0'); const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
+        setPh('newSpellName', t.spellNamePlaceholder || 'New spell'); setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect'); const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
+        setPh('ItemName', t.itemNamePlaceholder || 'New item'); setPh('ItemPrice', t.itemPricePlaceholder || 'some gp'); setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties'); const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
+        setLabel('label[for="pp"]', t.coinsPP || 'Platinum'); setLabel('label[for="gp"]', t.coinsGP || 'Gold'); setLabel('label[for="sp"]', t.coinsSP || 'Silver'); setLabel('label[for="cp"]', t.coinsCP || 'Copper'); setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
         renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
     }
 
     // persistence
-    function encodeCharacter(){
-        const payload = Object.assign({}, character, { _meta:{ver:1} });
-        return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-    }
-    function decodeCharacter(str){
-        try{
-            const json = decodeURIComponent(escape(atob(str)));
-            return JSON.parse(json);
-        }catch(e){
-            return null;
-        }
-    }
+    function encodeCharacter(){ const payload = Object.assign({}, character, { _meta:{ver:1} }); return btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+    function decodeCharacter(str){ try{ const json = decodeURIComponent(escape(atob(str))); return JSON.parse(json); }catch(e){ return null; } }
 
     function saveCharacter(){
         character.info.name  = qs('#charName').value.trim();
         character.info.race  = qs('#charRace').value.trim();
         character.info.class = qs('#charClass').value.trim();
-
-        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
-            const el=document.getElementById('stat'+k);
-            if(el) character.stats[k]=parseInt(el.value)||10;
-        });
-
+        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) character.stats[k]=parseInt(el.value)||10; });
         character.hp.current = parseInt(qs('#currentHP').value)||0;
         character.hp.max     = parseInt(qs('#maxHP').value)||1;
         character.armorClass = parseInt(qs('#armorClass').value)||0;
         character.speed      = parseInt(qs('#speed').value)||0;
         character.notes      = qs('#notes').value || '';
-
-        character.coins.pp = parseFloat(qs('#pp').value)||0;
-        character.coins.gp = parseFloat(qs('#gp').value)||0;
-        character.coins.sp = parseFloat(qs('#sp').value)||0;
-        character.coins.cp = parseFloat(qs('#cp').value)||0;
-
+        character.coins.pp = parseFloat(qs('#pp').value)||0; character.coins.gp = parseFloat(qs('#gp').value)||0; character.coins.sp = parseFloat(qs('#sp').value)||0; character.coins.cp = parseFloat(qs('#cp').value)||0;
         const encoded = encodeCharacter();
-        try{
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(encoded);
-            }
-        }catch(e){}
-
+        try{ if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(encoded); }catch(e){}
         localStorage.setItem('d20_character', encoded);
         alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].savedMsg) || 'Character encoded and copied to clipboard!');
     }
 
     function loadCharacter(){
-        const stored = localStorage.getItem('d20_character');
-        let data = null;
-        if (stored) data = decodeCharacter(stored);
+        const stored = localStorage.getItem('d20_character'); let data = null; if (stored) data = decodeCharacter(stored);
         if (!data){
-            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:');
-            if (!pasted) return;
-            data = decodeCharacter(pasted);
-            if (!data){
-                alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
-                return;
-            }
+            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:'); if (!pasted) return;
+            data = decodeCharacter(pasted); if (!data){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); return; }
         }
         try{
             if (data.info)  character.info  = Object.assign(character.info, data.info);
             if (data.stats) character.stats = Object.assign(character.stats, data.stats);
             if (data.hp)    character.hp    = Object.assign(character.hp, data.hp);
             if (data.coins) character.coins = Object.assign(character.coins, data.coins);
-
             character.skills    = Array.isArray(data.skills)?data.skills:character.skills;
             character.spells    = Array.isArray(data.spells)?data.spells:character.spells;
             character.inventory = Array.isArray(data.inventory)?data.inventory:character.inventory;
-
             character.armorClass = data.armorClass || character.armorClass;
             character.speed      = data.speed || character.speed;
             character.notes      = data.notes || character.notes;
-
             qs('#charName').value = character.info.name || '';
             qs('#charRace').value = character.info.race || '';
             qs('#charClass').value = character.info.class || '';
-
-            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
-                const el=document.getElementById('stat'+k);
-                if(el) el.value = character.stats[k] || 10;
-            });
+            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) el.value = character.stats[k] || 10; });
             updateStatModifiers();
-
-            qs('#currentHP').value = character.hp.current || 0;
-            qs('#maxHP').value     = character.hp.max || 1;
-            updateHealthBar();
-
-            qs('#armorClass').value = character.armorClass || 0;
-            qs('#speed').value      = character.speed || 0;
-            qs('#notes').value      = character.notes || '';
-
-            qs('#pp').value = character.coins.pp || 0;
-            qs('#gp').value = character.coins.gp || 0;
-            qs('#sp').value = character.coins.sp || 0;
-            qs('#cp').value = character.coins.cp || 0;
-
-            renderSkills();
-            renderSpells();
-            renderInventory();
-            updateInventoryTotal();
-
+            qs('#currentHP').value = character.hp.current || 0; qs('#maxHP').value     = character.hp.max || 1; updateHealthBar();
+            qs('#armorClass').value = character.armorClass || 0; qs('#speed').value      = character.speed || 0; qs('#notes').value      = character.notes || '';
+            qs('#pp').value = character.coins.pp || 0; qs('#gp').value = character.coins.gp || 0; qs('#sp').value = character.coins.sp || 0; qs('#cp').value = character.coins.cp || 0;
+            renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
             alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadedMsg) || 'Character loaded!');
-        }catch(e){
-            console.error(e);
-            alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
-        }
+        }catch(e){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); }
     }
 
-    // wiring
+    // wire up handlers
     function wireUp(){
         qsa('.stat-value').forEach(inp=> inp.addEventListener('input', updateStatModifiers));
-        qs('#currentHP').addEventListener('input', updateHealthBar);
-        qs('#maxHP').addEventListener('input', updateHealthBar);
+        const curHP = qs('#currentHP'); if (curHP) curHP.addEventListener('input', updateHealthBar);
+        const maxHP = qs('#maxHP'); if (maxHP) maxHP.addEventListener('input', updateHealthBar);
+        const newSkillName = qs('#newSkillName'); if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
+        const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
+        const newSpellName = qs('#newSpellName'); if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
+        const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.addEventListener('click', addSpell);
+        const itemName = qs('#ItemName'); if (itemName) itemName.addEventListener('input', onNewItemNameInput);
+        const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.addEventListener('click', addItem);
+        ['pp','gp','sp','cp'].forEach(id=>{ const el=qs('#'+id); if(el) el.addEventListener('input', updateInventoryTotal); });
+        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
+        const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
+        updateStatModifiers(); updateHealthBar(); renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+    }
 
-        qs('#newSkillName').addEventListener('input', onNewSkillNameInput);
-        qs('#addSkillBtn').addEventListener('click', addSkill);
+    initTabs(); initLanguage(); wireUp(); updateLanguage(); applyEditMode();
 
-        qs('#newSpellName').addEventListener('input', onNewSpellNameInput);
-        qs('#addSpellBtn').addEventListener('click', addSpell);
+    // ---------- Unified toggles: tooltips, lens, center toast ----------
+    function showCenterToast(text, ms = 1000) {
+        const el = document.createElement('div'); el.className = 'center-toast'; el.textContent = text; document.body.appendChild(el);
+        void el.offsetWidth; el.classList.add('show');
+        setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>{ if (el && el.parentNode) el.parentNode.removeChild(el); },300); }, ms);
+    }
+    function createInlineTooltip(container, text) {
+        let tip = container.querySelector('.inline-tooltip');
+        if (!tip) { tip = document.createElement('div'); tip.className = 'inline-tooltip'; container.appendChild(tip); }
+        tip.textContent = text; return tip;
+    }
+    function moveLensTo(toggleRoot, targetEl) {
+        const lens = toggleRoot.querySelector('.lens'); if (!lens || !targetEl) return;
+        const rootRect = toggleRoot.getBoundingClientRect(); const targetRect = targetEl.getBoundingClientRect();
+        const centerX = (targetRect.left + targetRect.right) / 2 - rootRect.left; const centerY = (targetRect.top + targetRect.bottom) / 2 - rootRect.top;
+        lens.style.left = (centerX - lens.offsetWidth / 2) + 'px'; lens.style.top  = (centerY - lens.offsetHeight / 2) + 'px';
+    }
 
-        qs('#ItemName').addEventListener('input', onNewItemNameInput);
-        qs('#addItemBtn').addEventListener('click', addItem);
+    // Mode toggle
+    (function setupModeToggle(){
+        const modeToggle = qs('#modeToggle'); if (!modeToggle) return;
+        const circles = Array.from(modeToggle.querySelectorAll('.circle'));
+        function updateModeUI(state, showCenter = true) {
+            modeToggle.dataset.state = state;
+            circles.forEach(c => {
+                const mode = c.dataset.mode;
+                if ((state === 'read' && mode === 'read') || (state === 'edit' && mode === 'edit')) {
+                    c.classList.add('active'); c.classList.remove('inactive');
+                } else {
+                    c.classList.remove('active'); c.classList.add('inactive');
+                }
+            });
+            const active = modeToggle.querySelector('.circle.active') || circles[0];
+            moveLensTo(modeToggle, active);
+            if (state === 'read') isEditMode = false; else isEditMode = true;
+            applyEditMode();
+            if (showCenter) showCenterToast(state === 'read' ? 'Режим чтения' : 'Режим редактирования', 1000);
+        }
+        updateModeUI(modeToggle.dataset.state || 'edit', false);
+        modeToggle.addEventListener('click', ()=>{ const newState = (modeToggle.dataset.state === 'read') ? 'edit' : 'read'; updateModeUI(newState, true); });
+        modeToggle.addEventListener('mouseenter', ()=>{ modeToggle.classList.add('has-tooltip'); createInlineTooltip(modeToggle, modeToggle.dataset.state === 'read' ? 'Режим чтения' : 'Режим редактирования'); });
+        modeToggle.addEventListener('mouseleave', ()=>{ modeToggle.classList.remove('has-tooltip'); const tip = modeToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
+        modeToggle.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); modeToggle.click(); } });
+        window.addEventListener('resize', ()=>{ const active = modeToggle.querySelector('.circle.active') || circles[0]; moveLensTo(modeToggle, active); });
+        requestAnimationFrame(()=>{ const active = modeToggle.querySelector('.circle.active') || circles[0]; moveLensTo(modeToggle, active); });
+    })();
 
-        ['pp','gp','sp','cp'].forEach(id=>{
-            const el=qs('#'+id);
-            if(el) el.addEventListener('input', updateInventoryTotal);
+    // Language toggle (2x2 grid)
+    (function setupLangToggle(){
+        const langToggle = qs('#langToggle'); if (!langToggle) return;
+        const circles = Array.from(langToggle.querySelectorAll('.circle')); const langs = circles.map(c => c.dataset.lang);
+        let selected = langToggle.dataset.selected || 'ru';
+        function updateLangUI(newLang, showToast = true) {
+            selected = newLang; langToggle.dataset.selected = newLang;
+            circles.forEach(c => { if (c.dataset.lang === newLang) { c.classList.add('active'); c.classList.remove('inactive'); } else { c.classList.remove('active'); c.classList.add('inactive'); }});
+            const activeEl = langToggle.querySelector(`.circle[data-lang="${newLang}"]`);
+            moveLensTo(langToggle, activeEl);
+            if (showToast) showCenterToast('Язык: ' + newLang.toUpperCase(), 900);
+            setLanguage(newLang);
+        }
+        updateLangUI(selected, false);
+        langToggle.addEventListener('click', ()=>{ const idx = langs.indexOf(selected); const next = langs[(idx + 1) % langs.length]; updateLangUI(next, true); });
+        langToggle.addEventListener('mouseenter', ()=>{ langToggle.classList.add('has-tooltip'); createInlineTooltip(langToggle, 'Выбран язык: ' + (langToggle.dataset.selected || 'ru').toUpperCase()); });
+        langToggle.addEventListener('mouseleave', ()=>{ langToggle.classList.remove('has-tooltip'); const tip = langToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
+        circles.forEach(c => {
+            c.addEventListener('click', (ev)=>{ ev.stopPropagation(); const lang = c.dataset.lang; updateLangUI(lang, true); });
+            c.addEventListener('mouseenter', ()=>{ langToggle.classList.add('has-tooltip'); createInlineTooltip(langToggle, 'Выбран язык: ' + c.dataset.lang.toUpperCase()); });
+            c.addEventListener('mouseleave', ()=>{ langToggle.classList.remove('has-tooltip'); const tip = langToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
         });
+        langToggle.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); langToggle.click(); } });
+        window.addEventListener('resize', ()=>{ const activeEl = langToggle.querySelector('.circle.active') || circles[0]; moveLensTo(langToggle, activeEl); });
+        requestAnimationFrame(()=>{ const active = langToggle.querySelector('.circle.active') || langToggle.querySelector('.circle'); moveLensTo(langToggle, active); });
+    })();
 
-        qs('#saveBtn').addEventListener('click', saveCharacter);
-        qs('#loadBtn').addEventListener('click', loadCharacter);
-
-        updateStatModifiers();
-        updateHealthBar();
-        renderSkills();
-        renderSpells();
-        renderInventory();
-        updateInventoryTotal();
-    }
-
-    initTabs();
-    initLanguage();
-    wireUp();
-    updateLanguage();
-
+    // expose API
     window.d20 = { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem };
-})();
 
-    document.addEventListener('DOMContentLoaded', ()=>{
-        initLanguage();
-        loadFromLocalStorage();
-        renderAllSections();
-        attachEventListeners();
-        initEditToggle();
-        applyEditMode();
-        
-    const notes = document.getElementById('notes');
-    if (notes){
-        notes.style.overflow = 'hidden';
-        notes.style.resize   = 'none';
+    // autosize notes
+    const notes = document.getElementById('notes'); if (notes){ notes.style.overflow = 'hidden'; notes.style.resize = 'none'; const autoNotes = ()=> autosizeDescription(notes); notes.addEventListener('input', autoNotes); setTimeout(autoNotes, 0); }
 
-        const autoNotes = ()=> autosizeDescription(notes);
-        notes.addEventListener('input', autoNotes);
-        setTimeout(autoNotes, 0);
-    }
-});
+})(); 
 
 </script>
 </body>
