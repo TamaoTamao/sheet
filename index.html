@@ -70,132 +70,111 @@
             gap: 8px;
         }
         
-        .mode-toggle { transform: scale(0.9); /* -10% */ padding: 4px; }
-        .mode-toggle .circle { width: 28px; height: 28px; }
-        .mode-toggle .circle.active { transform: scale(1.1); opacity: 1; background: var(--color-accent-gold); color: var(--color-parchment); }
-        .mode-toggle .circle.inactive { transform: scale(0.5); opacity: 0.5; background: var(--color-parchment-darker); color: var(--color-ink-light); }
-        .mode-toggle .lens {
-            width: 36px; height: 36px; /* circle 28 + 8px окантовка */
-            border-radius: 50%;
-            border: 2px solid rgba(44,24,16,0.95);
-            background: transparent;
-            box-shadow: 0 1px 0 var(--color-parchment);
-            position: absolute;
-            transition: left 180ms ease, top 180ms ease;
-            pointer-events: none;
-        }
-        
-        .mode-toggle .inline-tooltip { bottom: -44px; right: 0; }
-        @media (max-width: 640px) {
-            h1 { margin-top: 42px; }
-        }
+      .toggle-core {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  gap: 6px;
+  transform: scale(0.95);
+  user-select: none;
+}
 
-        .mode-circle {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--color-parchment-dark);
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
+/* language 2x2 */
+.toggle-grid.grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: repeat(2, auto);
+  gap: 6px;
+}
 
-        .mode-circle-left { margin-left: 1px; }
-        .mode-circle-right { margin-right: 1px; }
+/* mode row */
+.toggle-row { display:flex; gap:6px; align-items:center; }
 
-        .mode-lens {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 2px solid var(--color-ink-light);
-            box-shadow: 0 0 0 1px var(--color-parchment);
-            background-color: transparent;
-            top: 50%;
-            left: 4px;
-            transform: translateY(-50%);
-            transition: left 0.2s ease;
-        }
+/* circles (small) */
+.toggle-core .circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--color-parchment);
+  background: var(--color-parchment-darker);
+  transition: transform 180ms ease, opacity 180ms ease, background-color 180ms;
+  box-shadow: 0 1px 2px rgba(44,24,16,0.18);
+  pointer-events: auto;
+}
 
-        /* режим чтения: html имеет класс .readonly */
-        html.readonly .mode-circle-left {
-            transform: scale(1.4);
-            background-color: var(--color-accent-red);
-        }
+/* active = normal size; inactive = half size */
+.toggle-core .circle.active {
+  transform: scale(1);
+  opacity: 1;
+  background: var(--color-accent-gold);
+  color: var(--color-parchment);
+}
+.toggle-core .circle.inactive {
+  transform: scale(0.5);
+  opacity: 0.5;
+  background: var(--color-parchment-darker);
+  color: var(--color-parchment);
+}
 
-        html.readonly .mode-circle-right {
-            transform: scale(1);
-            background-color: var(--color-parchment-dark);
-        }
+/* lens slightly larger than circle to form outline */
+.toggle-core .lens {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(44,24,16,0.95);
+  background: transparent;
+  pointer-events: none;
+  box-shadow: 0 1px 0 var(--color-parchment);
+  transition: left 180ms ease, top 180ms ease;
+  z-index: 10;
+}
 
-        html.readonly .mode-lens {
-            left: 4px;
-        }
+/* Inline tooltip style (JS toggles presence) */
+.inline-tooltip {
+  position: absolute;
+  bottom: -40px;
+  right: 0;
+  background: rgba(244,232,208,0.95);
+  color: var(--color-ink);
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(44,24,16,0.18);
+  font-size: 0.85rem;
+  z-index: 50;
+  white-space: nowrap;
+}
 
-        html:not(.readonly) .mode-circle-right {
-            transform: scale(1.4);
-            background-color: var(--color-success);
-        }
+/* center toast */
+.center-toast {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.98);
+  background: rgba(244,232,208,0.95);
+  color: var(--color-ink);
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(44,24,16,0.25);
+  font-weight: 700;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 200ms, transform 200ms;
+}
+.center-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        html:not(.readonly) .mode-circle-left {
-            transform: scale(1);
-            background-color: var(--color-parchment-dark);
-        }
-
-        html:not(.readonly) .mode-lens {
-            left: 18px;
-        }
-
-        .readonly input,
-        .readonly textarea,
-        .readonly [contenteditable="true"] {
-            pointer-events: none;
-            background-color: var(--color-parchment-dark);
-        }
-
-        .readonly .btn-micro {
-            display: none;
-        }
-
-        .language-selector {
-            position: relative;
-            z-index: 10;
-        }
-
-        .language-toggle {
-            padding: 6px 12px;
-            background: var(--color-parchment-darker);
-            color: var(--color-ink);
-            border: none;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
-            text-transform: uppercase;
-            opacity: 0.7;
-        }
-
-        .language-toggle:hover {
-            background: var(--color-accent-gold);
-            color: var(--color-parchment);
-        }
-
-        .language-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 4px;
-            background: var(--color-parchment);
-            border-radius: 3px;
-            box-shadow: 0 4px 8px rgba(44, 24, 16, 0.2);
-            overflow: hidden;
-            z-index: 100;
-        }
-
-        .language-dropdown.active {
-            display: block;
-        }
+/* small-screen safety */
+@media (max-width: 640px) {
+  h1 { margin-top: 42px; }
+  .top-right-controls { right: 8px; top: 6px; gap: 8px; }
+}
 
         .compact-input {
             display: flex;
@@ -702,28 +681,27 @@
 </head>
 <body>
     
-    <div class="container">
-        <div class="top-right-controls">
-            <div class="language-selector">
-                <button class="language-toggle" id="langToggle">RU ▼</button>
-                <div class="language-dropdown" id="langDropdown">
-                    <button data-lang="en">EN</button>
-                    <button data-lang="ru">RU</button>
-                    <button data-lang="fr">FR</button>
-                    <button data-lang="es">ES</button>
-                </div>
-            </div>
+    <div class="top-right-controls">
+  // кнопка выбора языков
+  <div class="toggle-core lang-toggle" id="langToggle" role="button" tabindex="0" aria-label="Язык" data-selected="ru">
+    <div class="toggle-grid grid-2x2" aria-hidden="true">
+      <div class="circle" data-lang="ru" aria-label="Русский">RU</div>
+      <div class="circle" data-lang="en" aria-label="English">EN</div>
+      <div class="circle" data-lang="es" aria-label="Español">ES</div>
+      <div class="circle" data-lang="fr" aria-label="Français">FR</div>
+    </div>
+    <div class="lens" aria-hidden="true"></div>
+  </div>
 
-            <div class="mode-selector">
-                <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Mode toggle" data-state="edit">
-                    <div class="toggle-row" aria-hidden="true">
-                        <div class="circle" data-mode="read" aria-label="Режим чтения">Ч</div>
-                        <div class="circle" data-mode="edit" aria-label="Режим редактирования">Р</div>
-                    </div>
-                    <div class="lens" aria-hidden="true"></div>
-                </div>
-            </div>
-        </div>
+  // кнопка режима редактирования/чтения листа
+  <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Режим" data-state="edit">
+    <div class="toggle-row" aria-hidden="true">
+      <div class="circle" data-mode="read" aria-label="Режим чтения"></div>
+      <div class="circle" data-mode="edit" aria-label="Режим редактирования"></div>
+    </div>
+    <div class="lens" aria-hidden="true"></div>
+  </div>
+</div>
 
         <h1>D20 лист персонажа</h1>
 
@@ -1549,62 +1527,6 @@ const translations = {
         lens.style.left = (centerX - lens.offsetWidth / 2) + 'px'; lens.style.top  = (centerY - lens.offsetHeight / 2) + 'px';
     }
 
-    // Mode toggle
-    (function setupModeToggle(){
-        const modeToggle = qs('#modeToggle'); if (!modeToggle) return;
-        const circles = Array.from(modeToggle.querySelectorAll('.circle'));
-        function updateModeUI(state, showCenter = true) {
-            modeToggle.dataset.state = state;
-            circles.forEach(c => {
-                const mode = c.dataset.mode;
-                if ((state === 'read' && mode === 'read') || (state === 'edit' && mode === 'edit')) {
-                    c.classList.add('active'); c.classList.remove('inactive');
-                } else {
-                    c.classList.remove('active'); c.classList.add('inactive');
-                }
-            });
-            const active = modeToggle.querySelector('.circle.active') || circles[0];
-            moveLensTo(modeToggle, active);
-            if (state === 'read') isEditMode = false; else isEditMode = true;
-            applyEditMode();
-            if (showCenter) showCenterToast(state === 'read' ? 'Режим чтения' : 'Режим редактирования', 1000);
-        }
-        updateModeUI(modeToggle.dataset.state || 'edit', false);
-        modeToggle.addEventListener('click', ()=>{ const newState = (modeToggle.dataset.state === 'read') ? 'edit' : 'read'; updateModeUI(newState, true); });
-        modeToggle.addEventListener('mouseenter', ()=>{ modeToggle.classList.add('has-tooltip'); createInlineTooltip(modeToggle, modeToggle.dataset.state === 'read' ? 'Режим чтения' : 'Режим редактирования'); });
-        modeToggle.addEventListener('mouseleave', ()=>{ modeToggle.classList.remove('has-tooltip'); const tip = modeToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
-        modeToggle.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); modeToggle.click(); } });
-        window.addEventListener('resize', ()=>{ const active = modeToggle.querySelector('.circle.active') || circles[0]; moveLensTo(modeToggle, active); });
-        requestAnimationFrame(()=>{ const active = modeToggle.querySelector('.circle.active') || circles[0]; moveLensTo(modeToggle, active); });
-    })();
-
-    // Language toggle (2x2 grid)
-    (function setupLangToggle(){
-        const langToggle = qs('#langToggle'); if (!langToggle) return;
-        const circles = Array.from(langToggle.querySelectorAll('.circle')); const langs = circles.map(c => c.dataset.lang);
-        let selected = langToggle.dataset.selected || 'ru';
-        function updateLangUI(newLang, showToast = true) {
-            selected = newLang; langToggle.dataset.selected = newLang;
-            circles.forEach(c => { if (c.dataset.lang === newLang) { c.classList.add('active'); c.classList.remove('inactive'); } else { c.classList.remove('active'); c.classList.add('inactive'); }});
-            const activeEl = langToggle.querySelector(`.circle[data-lang="${newLang}"]`);
-            moveLensTo(langToggle, activeEl);
-            if (showToast) showCenterToast('Язык: ' + newLang.toUpperCase(), 900);
-            setLanguage(newLang);
-        }
-        updateLangUI(selected, false);
-        langToggle.addEventListener('click', ()=>{ const idx = langs.indexOf(selected); const next = langs[(idx + 1) % langs.length]; updateLangUI(next, true); });
-        langToggle.addEventListener('mouseenter', ()=>{ langToggle.classList.add('has-tooltip'); createInlineTooltip(langToggle, 'Выбран язык: ' + (langToggle.dataset.selected || 'ru').toUpperCase()); });
-        langToggle.addEventListener('mouseleave', ()=>{ langToggle.classList.remove('has-tooltip'); const tip = langToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
-        circles.forEach(c => {
-            c.addEventListener('click', (ev)=>{ ev.stopPropagation(); const lang = c.dataset.lang; updateLangUI(lang, true); });
-            c.addEventListener('mouseenter', ()=>{ langToggle.classList.add('has-tooltip'); createInlineTooltip(langToggle, 'Выбран язык: ' + c.dataset.lang.toUpperCase()); });
-            c.addEventListener('mouseleave', ()=>{ langToggle.classList.remove('has-tooltip'); const tip = langToggle.querySelector('.inline-tooltip'); if (tip) tip.remove(); });
-        });
-        langToggle.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); langToggle.click(); } });
-        window.addEventListener('resize', ()=>{ const activeEl = langToggle.querySelector('.circle.active') || circles[0]; moveLensTo(langToggle, activeEl); });
-        requestAnimationFrame(()=>{ const active = langToggle.querySelector('.circle.active') || langToggle.querySelector('.circle'); moveLensTo(langToggle, active); });
-    })();
-
     // expose API
     window.d20 = { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem };
 
@@ -1613,6 +1535,181 @@ const translations = {
 
 })(); 
 
+</script>
+<script>
+(function(){
+  const qs = s => document.querySelector(s);
+  const qsa = s => Array.from(document.querySelectorAll(s));
+
+  function showCenterToast(text, ms = 1000) {
+    const el = document.createElement('div');
+    el.className = 'center-toast';
+    el.textContent = text;
+    document.body.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show'));
+    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=> el.remove(), 220); }, ms);
+  }
+
+  function createInlineTooltip(root, text) {
+    let tip = root.querySelector('.inline-tooltip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'inline-tooltip';
+      root.appendChild(tip);
+    }
+    tip.textContent = text;
+    return tip;
+  }
+
+  function moveLensTo(root, target) {
+    const lens = root.querySelector('.lens');
+    if (!lens || !target) return;
+    const rootRect = root.getBoundingClientRect();
+    const tRect = target.getBoundingClientRect();
+    const cx = (tRect.left + tRect.right) / 2 - rootRect.left;
+    const cy = (tRect.top + tRect.bottom) / 2 - rootRect.top;
+    lens.style.left = (cx - lens.offsetWidth / 2) + 'px';
+    lens.style.top  = (cy - lens.offsetHeight / 2) + 'px';
+  }
+
+  function updateAddFormsVisibility(isRead) {
+    const addIds = ['#skillsAdd', '#spellsAdd', '#itemsAdd'];
+    addIds.forEach(id => {
+      const el = qs(id);
+      if (!el) return;
+      if (isRead) {
+        el.dataset._display = el.style.display || '';
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      } else {
+        const prev = el.dataset._display || '';
+        el.style.display = prev || 'block';
+        el.removeAttribute('aria-hidden');
+      }
+    });
+  }
+
+  // кнопка редактирования/чтения листа
+  (function setupMode(){
+    const root = qs('#modeToggle');
+    if (!root) return;
+    const circles = Array.from(root.querySelectorAll('.circle'));
+    // visual: empty circles
+    circles.forEach(c => { c.textContent = ''; });
+
+    function setMode(mode, announce = true) {
+      root.dataset.state = mode;
+      circles.forEach(c => {
+        const m = c.dataset.mode;
+        if (m === mode) { c.classList.add('active'); c.classList.remove('inactive'); }
+        else { c.classList.remove('active'); c.classList.add('inactive'); }
+      });
+      const active = root.querySelector('.circle.active') || circles[0];
+      moveLensTo(root, active);
+
+      const isRead = mode === 'read';
+      if (isRead) document.documentElement.classList.add('readonly');
+      else document.documentElement.classList.remove('readonly');
+
+      updateAddFormsVisibility(isRead);
+
+      if (announce) showCenterToast(isRead ? 'Режим чтения' : 'Режим редактирования', 1000);
+    }
+
+    setMode(root.dataset.state === 'read' ? 'read' : 'edit', false);
+
+    root.addEventListener('click', ()=>{
+      const newState = (root.dataset.state === 'read') ? 'edit' : 'read';
+      setMode(newState, true);
+    });
+
+    // tooltip on hover for the control (shows current state)
+    root.addEventListener('mouseenter', ()=> createInlineTooltip(root, root.dataset.state === 'read' ? 'Режим чтения' : 'Режим редактирования'));
+    root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
+
+    root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
+    window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+    requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+  })();
+
+  // кнопка переключения языков
+  (function setupLang(){
+    const root = qs('#langToggle');
+    if (!root) return;
+    const circles = Array.from(root.querySelectorAll('.circle'));
+    if (circles.length < 4) return; // expect 4
+
+    // normalize data-lang if missing
+    circles.forEach(c => {
+      if (!c.dataset.lang) {
+        const txt = (c.textContent || '').trim().toLowerCase();
+        if (txt.startsWith('ru')) c.dataset.lang = 'ru';
+        else if (txt.startsWith('en')) c.dataset.lang = 'en';
+        else if (txt.startsWith('es')) c.dataset.lang = 'es';
+        else if (txt.startsWith('fr')) c.dataset.lang = 'fr';
+      }
+    });
+
+    const order = circles.map(c => c.dataset.lang).filter(Boolean);
+    if (!order.length) return;
+    let selected = root.dataset.selected || order[0];
+
+    function setLang(lang, showToast = true) {
+      selected = lang;
+      root.dataset.selected = lang;
+      circles.forEach(c => {
+        if (c.dataset.lang === lang) { c.classList.add('active'); c.classList.remove('inactive'); }
+        else { c.classList.remove('active'); c.classList.add('inactive'); }
+      });
+      moveLensTo(root, root.querySelector('.circle.active') || circles[0]);
+
+      // call existing i18n functions if available
+      if (typeof setLanguage === 'function') {
+        try { setLanguage(lang); } catch(e) {}
+      } else if (window.d20 && typeof window.d20.setLanguage === 'function') {
+        try { window.d20.setLanguage(lang); } catch(e) {}
+      } else {
+        try { window.currentLanguage = lang; if (typeof updateLanguage === 'function') updateLanguage(); } catch(e) {}
+      }
+
+      if (showToast) showCenterToast('Язык: ' + lang.toUpperCase(), 900);
+    }
+
+    // remove per-circle click handlers: only root click cycles languages
+    circles.forEach(c=>{
+      // keep visible label RU/EN/ES/FR
+      c.style.cursor = 'default';
+      c.addEventListener('mouseenter', ()=> {
+        // tooltip shows currently selected language (not per-circle selection)
+        // but we keep helpful hover text referencing this circle for clarity
+        const current = root.dataset.selected || selected;
+        createInlineTooltip(root, 'Выбран язык: ' + (current || '').toUpperCase());
+      });
+      c.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
+    });
+
+    // root click cycles only
+    root.addEventListener('click', () => {
+      const idx = order.indexOf(selected);
+      const next = order[(idx + 1) % order.length];
+      setLang(next, true);
+    });
+
+    // root hover shows selected language
+    root.addEventListener('mouseenter', ()=> {
+      const cur = root.dataset.selected || selected;
+      createInlineTooltip(root, 'Выбран язык: ' + (cur || '').toUpperCase());
+    });
+    root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
+
+    root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
+
+    setLang(selected, false);
+    window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+    requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+  })();
+
+})();
 </script>
 </body>
 </html>
