@@ -61,14 +61,25 @@
             z-index: 1;
         }
 
-        .top-right-controls {
-            position: absolute;
-            top: -10px;
-            right: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+      .top-right-controls {
+  position: fixed;
+  top: 14px;   
+  right: 14px;    
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999; 
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  .top-right-controls {
+    top: 10px;
+    right: 8px;
+    gap: 8px;
+  }
+  h1 { margin-top: 56px; }
+}
         
       .toggle-core {
   position: relative;
