@@ -1,3 +1,4 @@
+<DOCUMENT filename="index.html">
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -21,7 +22,11 @@
             --color-hp-green: #4a7c4e;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
@@ -41,145 +46,654 @@
             width: 600px;
             height: 600px;
             background-image: url('https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/e1faea3b-6c21-44a1-a2d1-d016eb553111');
-            background-size: contain; background-repeat: no-repeat; background-position: center;
-            opacity: 0.03; pointer-events: none; z-index: 0;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
 
-        .top-right-controls { position: absolute; top: -10px; right: 0; display: flex; align-items: center; gap: 8px; }
+        .top-right-controls {
+            position: absolute;
+            top: -10px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mode-toggle {
+            position: relative;
+            width: 34px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            pointer-events: auto;
+            cursor: pointer;
+        }
 
-        .mode-toggle { position: relative; width: 34px; height: 16px; display: flex; align-items: center; justify-content: space-between; pointer-events: auto; cursor: pointer; }
-        .mode-circle { width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-parchment-dark); transition: transform 0.2s ease, background-color 0.2s ease; }
-        .mode-circle-left { margin-left: 1px; } .mode-circle-right { margin-right: 1px; }
-        .mode-lens { position: absolute; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-ink-light); box-shadow: 0 0 0 1px var(--color-parchment); background-color: transparent; top: 50%; left: 4px; transform: translateY(-50%); transition: left 0.2s ease; }
+        .mode-circle {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-parchment-dark);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
 
-        html.readonly .mode-circle-left { transform: scale(1.4); background-color: var(--color-accent-red); }
-        html.readonly .mode-circle-right { transform: scale(1); background-color: var(--color-parchment-dark); }
-        html.readonly .mode-lens { left: 4px; }
+        .mode-circle-left { margin-left: 1px; }
+        .mode-circle-right { margin-right: 1px; }
 
-        html:not(.readonly) .mode-circle-right { transform: scale(1.4); background-color: var(--color-success); }
-        html:not(.readonly) .mode-circle-left { transform: scale(1); background-color: var(--color-parchment-dark); }
-        html:not(.readonly) .mode-lens { left: 18px; }
+        .mode-lens {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--color-ink-light);
+            box-shadow: 0 0 0 1px var(--color-parchment);
+            background-color: transparent;
+            top: 50%;
+            left: 4px;
+            transform: translateY(-50%);
+            transition: left 0.2s ease;
+        }
 
-        .readonly input, .readonly textarea, .readonly [contenteditable="true"] { pointer-events: none; background-color: var(--color-parchment-dark); }
-        .readonly .btn-micro { display: none; }
+        /* режим чтения: html имеет класс .readonly */
+        html.readonly .mode-circle-left {
+            transform: scale(1.4);
+            background-color: var(--color-accent-red);
+        }
 
-        .language-selector { position: relative; z-index: 10; }
-        .language-toggle { padding: 6px 12px; background: var(--color-parchment-darker); color: var(--color-ink); border: none; border-radius: 3px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; text-transform: uppercase; opacity: 0.7; }
-        .language-toggle:hover { background: var(--color-accent-gold); color: var(--color-parchment); }
-        .language-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--color-parchment); border-radius: 3px; box-shadow: 0 4px 8px rgba(44, 24, 16, 0.2); overflow: hidden; z-index: 100; }
-        .language-dropdown.active { display: block; }
-        .language-dropdown button { display: block; width: 100%; padding: 8px 16px; background: transparent; border: none; text-align: left; cursor: pointer; font-family: inherit; font-size: 0.875rem; color: var(--color-ink); transition: background 0.2s; }
-        .language-dropdown button:hover { background: var(--color-parchment-dark); }
+        html.readonly .mode-circle-right {
+            transform: scale(1);
+            background-color: var(--color-parchment-dark);
+        }
 
-        .compact-input { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .compact-input label { flex: 0 0 auto; min-width: 120px; }
-        .compact-input input { width: 80px; padding: 6px 8px; }
+        html.readonly .mode-lens {
+            left: 4px;
+        }
 
-        .inline-input { display: flex; align-items: center; gap: 8px; }
-        .inline-input input[type="number"] { width: 70px; padding: 6px 8px; }
-        .inline-input input[type="text"] { width: 120px; padding: 6px 8px; }
+        /* режим редактирования: html без .readonly */
+        html:not(.readonly) .mode-circle-right {
+            transform: scale(1.4);
+            background-color: var(--color-success);
+        }
 
-        h1 { color: #fff; margin-bottom: 12px; font-size: 1.4rem; font-weight: bold; text-align: center; text-shadow: 0 3px 6px rgba(74,52,40,0.8), 0 6px 12px rgba(74,52,40,0.7); letter-spacing: 1px; font-variant: small-caps; }
-        h2 { color: #fff; margin: 20px 0 12px; font-size: 1.4rem; border-bottom: 3px double var(--color-accent-gold); padding-bottom: 8px; font-weight: bold; font-variant: small-caps; }
+        html:not(.readonly) .mode-circle-left {
+            transform: scale(1);
+            background-color: var(--color-parchment-dark);
+        }
 
-        .section { background: var(--color-parchment); padding: 20px; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(44, 24, 16, 0.15), inset 0 0 30px rgba(212,195,165,0.3); position: relative; }
-        .section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/fee152f2-a72d-40e3-8a44-742260cdc187'); background-size: 400px; background-repeat: repeat; opacity: 0.15; pointer-events: none; border-radius: 4px; }
-        .section::after { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-width: 0,1px; border-color: #fff; border-style: solid; border-radius: 4px; pointer-events: none; }
+        html:not(.readonly) .mode-lens {
+            left: 18px;
+        }
 
-        .grid { display: grid; gap: 12px; }
-        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+        .readonly input,
+        .readonly textarea,
+        .readonly [contenteditable="true"] {
+            pointer-events: none;
+            background-color: var(--color-parchment-dark);
+        }
 
-        .input-group { display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 0.875rem; font-weight: 600; color: #fff; text-shadow: 0 1px 3px rgba(74,52,40,0.8); }
-
-        input, textarea, select { padding: 10px 12px; background: var(--color-parchment-dark); border: none; color: var(--color-ink); font-size: 1rem; transition: all 0.2s; font-family: inherit; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--color-accent-gold); background: var(--color-parchment); box-shadow: 0 0 8px rgba(139,105,20,0.3); }
-        textarea { resize: none; min-height: 80px; width: 100%; box-sizing: border-box; }
-
-        .item-details { font-size: 0.85rem; color: var(--color-ink-light); font-style: italic; }
-        .stat-compact { background: var(--color-parchment-dark); padding: 12px; border-radius: 50%; text-align: center; width: 90px; height: 90px; display:flex; align-items:center; justify-content:center; flex-direction:column; }
-        .stat-compact label { margin-bottom: 6px; font-size: 0.7rem; font-weight: 700; }
-        .stat-row { display:flex; flex-direction:column; gap:4px; align-items:center; }
-        .stat-value { width:45px; text-align:center; font-size:1.5rem; font-weight:bold; border:none; background:transparent; }
-        .stat-mod { width:40px; text-align:center; font-size:0.9rem; font-weight:600; padding:4px; background: var(--color-parchment-darker); color: var(--color-accent-red); border-radius:12px; }
-
-        .btn { padding: 10px 20px; background: var(--color-accent-gold); color: var(--color-parchment); border: none; border-radius: 3px; cursor: pointer; font-weight:600; }
-        .btn:hover { background: var(--color-ink-light); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(44,24,16,0.3); }
-        .btn-secondary { background: var(--color-parchment-darker); color: var(--color-ink); }
-        .btn-danger { background: var(--color-danger); color: var(--color-parchment); }
-        .btn-small { padding: 6px 12px; font-size: 0.875rem; }
-        .btn-micro { width: 1rem; height:1rem; display:inline-flex; align-items:center; justify-content:center; }
-
-        .item { background: var(--color-parchment-dark); padding:12px; border-radius:3px; display:flex; justify-content:space-between; gap:12px; margin-bottom:8px; }
-        .item-info { flex:1 1 auto; min-width:0; } .item-name { font-weight:700; color:#fff; }
-        .item-actions { display:flex; gap:8px; align-items:center; flex-shrink:0; }
-
-        .progress-bar { width:100%; height:12px; background: var(--color-parchment-darker); border-radius:4px; overflow:hidden; position:relative; box-shadow: inset 0 0 3px rgba(0,0,0,0.4); }
-        .progress-fill { height:100%; transition: width 0.3s, background-color 0.2s ease; border-radius:4px; }
-
-        .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-        .tab { padding:10px 20px; background: var(--color-parchment-darker); color: var(--color-ink-light); border-radius:3px; cursor:pointer; font-weight:600; }
-        .tab.active { background: var(--color-accent-gold); color: var(--color-parchment); }
-
-        .tab-content { display:none; }
-        .tab-content.active { display:block; }
-
-        .empty-state { text-align:center; padding:40px 20px; color:var(--color-ink-light); font-style:italic; }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #ccc;
-            padding: 8px 12px;
+        .readonly .btn-micro {
             display: none;
-            opacity: 0;
-            transition: opacity 0.25s;
-            z-index: 9999;
-            border-radius: 6px;
+        }
+
+        .language-selector {
+            position: relative;
+            z-index: 10;
+        }
+
+        .language-toggle {
+            padding: 6px 12px;
+            background: var(--color-parchment-darker);
+            color: var(--color-ink);
+            border: none;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .language-toggle:hover {
+            background: var(--color-accent-gold);
+            color: var(--color-parchment);
+        }
+
+        .language-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--color-parchment);
+            border-radius: 3px;
+            box-shadow: 0 4px 8px rgba(44, 24, 16, 0.2);
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .language-dropdown.active {
+            display: block;
+        }
+
+        .compact-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .compact-input label {
+            flex: 0 0 auto;
+            min-width: 120px;
+        }
+
+        .compact-input input {
+            width: 80px;
+            padding: 6px 8px;
+        }
+
+        .inline-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inline-input label {
+            flex: 0 0 auto;
+        }
+
+        .inline-input input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+        }
+
+        .inline-input input[type="text"] {
+            width: 120px;
+            padding: 6px 8px;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 12px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 
+                0 3px 6px rgba(74, 52, 40, 0.8),
+                0 6px 12px rgba(74, 52, 40, 0.7),
+                0 9px 18px rgba(74, 52, 40, 0.6),
+                0 12px 24px rgba(74, 52, 40, 0.5),
+                0 15px 30px rgba(74, 52, 40, 0.4),
+                1px 1px 3px rgba(44, 24, 16, 0.9),
+                -1px -1px 3px rgba(44, 24, 16, 0.9),
+                2px 2px 6px rgba(44, 24, 16, 0.8),
+                -2px -2px 6px rgba(44, 24, 16, 0.8);
+            letter-spacing: 1px;
+            font-variant: small-caps;
+        }
+
+        h2 {
+            color: #fff;
+            margin: 20px 0 12px;
+            font-size: 1.4rem;
+            border-bottom: 3px double var(--color-accent-gold);
+            padding-bottom: 8px;
+            font-weight: bold;
+            font-variant: small-caps;
+            letter-spacing: 1px;
+            text-shadow: 
+                0 2px 5px rgba(74, 52, 40, 0.8),
+                0 4px 10px rgba(74, 52, 40, 0.7),
+                0 6px 15px rgba(74, 52, 40, 0.6),
+                0 8px 20px rgba(74, 52, 40, 0.5),
+                1px 1px 2px rgba(44, 24, 16, 0.9),
+                -1px -1px 2px rgba(44, 24, 16, 0.9);
+        }
+
+        .section {
+            background: var(--color-parchment);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 4px 8px rgba(44, 24, 16, 0.15), 
+                inset 0 0 30px rgba(212, 195, 165, 0.3);
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                url('https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/fee152f2-a72d-40e3-8a44-742260cdc187');
+            background-size: 400px;
+            background-repeat: repeat;
+            opacity: 0.15;
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        .section::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-width: 0,1px;
+            border-color: #fff
+            border-style: solid;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 
+                0 1px 3px rgba(74, 52, 40, 0.8),
+                0 2px 6px rgba(74, 52, 40, 0.7),
+                0 3px 9px rgba(74, 52, 40, 0.6),
+                0 4px 12px rgba(74, 52, 40, 0.5),
+                1px 1px 2px rgba(44, 24, 16, 0.9),
+                -1px -1px 2px rgba(44, 24, 16, 0.9);
+        }
+
+        input, textarea, select {
+            padding: 10px 12px;
+            background: var(--color-parchment-dark);
+            border: none;
+            border-radius: 0;
+            color: var(--color-ink);
+            font-size: 1rem;
+            transition: all 0.2s;
             font-family: inherit;
         }
 
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--color-accent-gold);
+            background: var(--color-parchment);
+            box-shadow: 0 0 8px rgba(139, 105, 20, 0.3);
+        }
+
+        textarea {
+            resize: none;
+            min-height: 80px;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+
+        .item-details {
+            font-size: 0.85rem;
+            color: var(--color-ink-light);
+            font-style: italic;
+        }
+        
+        .item-details input,
+        .item-details textarea {
+            font-family: inherit;
+            font-style: inherit;
+            font-size: inherit;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .stat-compact {
+            background: var(--color-parchment-dark);
+            padding: 12px;
+            border-radius: 50%;
+            text-align: center;
+            box-shadow: 
+                inset 0 2px 4px rgba(44, 24, 16, 0.1),
+                0 4px 8px rgba(44, 24, 16, 0.2);
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stat-compact::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/fee152f2-a72d-40e3-8a44-742260cdc187');
+            background-size: 200px;
+            opacity: 0.1;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+
+        .stat-compact label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .stat-value {
+            width: 45px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 4px;
+            background: transparent;
+            border: none;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+
+        .stat-value::-webkit-inner-spin-button,
+        .stat-value::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stat-mod {
+            width: 40px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 4px;
+            background: var(--color-parchment-darker);
+            color: var(--color-accent-red);
+            border-radius: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: var(--color-accent-gold);
+            color: var(--color-parchment);
+            border: none;
+            border-radius: 3px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--color-ink-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(44, 24, 16, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--color-parchment-darker);
+            color: var(--color-ink);
+            text-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-parchment-dark);
+        }
+
+        .btn-danger {
+            background: var(--color-danger);
+            color: var(--color-parchment);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        .btn-micro {
+            width: 1rem;
+            height: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 0.2rem;
+            font-size: 0.8rem;
+        }
+
+
+        .item {
+            background: var(--color-parchment-dark);
+            padding: 12px;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        .item-info {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 
+                0 1px 3px rgba(74, 52, 40, 0.8),
+                0 2px 6px rgba(74, 52, 40, 0.7),
+                0 3px 9px rgba(74, 52, 40, 0.6),
+                0 4px 12px rgba(74, 52, 40, 0.5),
+                1px 1px 2px rgba(44, 24, 16, 0.9),
+                -1px -1px 2px rgba(44, 24, 16, 0.9);
+        }
+
+        .item-details {
+            font-size: 0.875rem;
+            color: var(--color-ink-light);
+            margin-top: 4px;
+            font-style: italic;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .item-details textarea {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--color-parchment);
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+
+        .counter button {
+            width: 28px;
+            height: 28px;
+            background: var(--color-accent-gold);
+            color: var(--color-parchment);
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .counter button:hover {
+            background: var(--color-ink-light);
+        }
+
+        .counter span {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--color-parchment-darker);
+            color: var(--color-ink-light);
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-variant: small-caps;
+        }
+
+        .tab.active {
+            background: var(--color-accent-gold);
+            color: var(--color-parchment);
+            border-color: var(--color-ink);
+            box-shadow: inset 0 2px 4px rgba(44, 24, 16, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .add-form {
+            background: var(--color-parchment-darker);
+            padding: 16px;
+            border-radius: 3px;
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-row > * {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .health-bar {
+            margin-top: 12px;
+        }
+
+        .health-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px; /* было 18px */
+            background: var(--color-parchment-darker);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s, background-color 0.2s ease;
+            border-radius: 4px;
+        }
+
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--color-ink-light);
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-box input {
+                font-size: 1.25rem;
+            }
         }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        function toggleMode() {
-            document.documentElement.classList.toggle('readonly');
-        }
-
-        function changeLanguage(lang) {
-            document.getElementById('langToggle').innerText = lang + ' ▼';
-            document.querySelectorAll('.language-dropdown button').forEach(button => {
-                button.classList.remove('active');
-                if (button.getAttribute('data-lang') === lang.toLowerCase()) {
-                    button.classList.add('active');
-                }
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.querySelector('.toast');
-            toast.innerText = message;
-            toast.style.display = 'block';
-            toast.style.opacity = '1';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 250);
-            }, 3000);
-        }
-    </script>
 </head>
 <body>
+    
     <div class="container">
         <div class="top-right-controls">
             <div class="language-selector">
@@ -220,10 +734,1279 @@
                     <input type="text" id="charRace" placeholder="Человек, эльф, дворф...">
                 </div>
                 <div style="display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px;">
-                    <!-- Additional fields and content can be added here -->
+                    <div class="input-group" style="flex: 1;">
+                        <label for="charClass">Класс</label>
+                        <input type="text" id="charClass" placeholder="Воин, бард, чародей...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Характеристики</h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 700px; margin: 0 auto;">
+                    <div class="stat-compact">
+                        <label>СИЛ</label>
+                        <div class="stat-row">
+                            <input type="number" id="statStr" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modStr" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                    <div class="stat-compact">
+                        <label>ЛВК</label>
+                        <div class="stat-row">
+                            <input type="number" id="statDex" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modDex" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                    <div class="stat-compact">
+                        <label>ТЕЛ</label>
+                        <div class="stat-row">
+                            <input type="number" id="statCon" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modCon" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                    <div class="stat-compact">
+                        <label>ИНТ</label>
+                        <div class="stat-row">
+                            <input type="number" id="statInt" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modInt" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                    <div class="stat-compact">
+                        <label>МДР</label>
+                        <div class="stat-row">
+                            <input type="number" id="statWis" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modWis" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                    <div class="stat-compact">
+                        <label>ХАР</label>
+                        <div class="stat-row">
+                            <input type="number" id="statCha" value="10" min="1" max="30" class="stat-value">
+                            <input type="text" id="modCha" value="+0" class="stat-mod" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Здоровье и ресурсы</h2>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                    <label for="currentHP" style="white-space: nowrap;">Текущее HP</label>
+                    <input type="number" id="currentHP" value="20" min="0" style="width: 80px;">
+                    <label for="maxHP" style="white-space: nowrap;">Максимальное HP</label>
+                    <input type="number" id="maxHP" value="20" min="1" style="width: 80px;">
+                </div>
+                <div class="health-bar" style="margin-bottom: 16px;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="hpBar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <label for="armorClass" style="white-space: nowrap;">Класс доспеха</label>
+                    <input type="number" id="armorClass" value="10" min="0" style="width: 80px;">
+                    <label for="speed" style="white-space: nowrap;">Скорость</label>
+                    <input type="number" id="speed" value="30" min="0" style="width: 80px;">
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Заметки</h2>
+                <textarea id="notes" placeholder="Заметки о персонаже, история, особенности..."></textarea>
+            </div>
+
+            <div class="section">
+                <button class="btn" id="saveBtn">Сохранить персонажа</button>
+                <button class="btn btn-secondary" id="loadBtn" style="margin-left: 12px;">Загрузить персонажа</button>
+            </div>
+        </div>
+
+        <div id="skills" class="tab-content">
+            <div class="section">
+                <h2>Навыки</h2>
+                <div id="skillsList"></div>
+                <div id="skillsAdd" style="margin-top:12px;">
+                    <input type="text" id="newSkillName" placeholder="Добавить навык">
+                    <div id="skillsExtraFields" style="display:none; margin-top:8px;">
+                        <input type="text" id="newSkillBonus" placeholder="бонус +0">
+                        <button class="btn btn-small" id="addSkillBtn">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="spells" class="tab-content">
+            <div class="section">
+                <h2>Заклинания</h2>
+                <div id="spellsList"></div>
+                <div id="spellsAdd" style="margin-top:12px;">
+                    <input type="text" id="newSpellName" placeholder="Добавить заклинание">
+                    <div id="spellsExtraFields" style="display:none; margin-top:8px;">
+                        <div class="form-row">
+                            <div class="inline-input">
+                                <input type="number" id="newSpellLevel" placeholder="Уровень заклинания" min="0" max="9">
+                            </div>
+                            <div class="inline-input">
+                                <input type="number" id="newSpellSlots" placeholder="Доступные слоты" min="0">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <textarea id="newSpellDesc" placeholder="Эффект заклинания" style="min-height:60px;"></textarea>
+                        </div>
+                        <button class="btn btn-small" id="addSpellBtn">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory" class="tab-content">
+            <div class="section">
+                <h2>Инвентарь</h2>
+                <div id="inventoryList"></div>
+                <div id="itemsAdd" style="margin-top: 16px;">
+                    <input type="text" id="ItemName" placeholder="Добавить предмет">
+                    <div id="itemsExtraFields" style="display:none; margin-top: 8px;">
+                        <div class="form-row">
+                            <div class="inline-input">
+                                <input type="number" id="ItemQuantity" placeholder="Количество" min="0">
+                            </div>
+                            <div class="inline-input">
+                                <input type="text" id="ItemPrice" placeholder="Рыночная стоимость" min="0">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <textarea id="ItemDesc" placeholder="Свойства" style="min-height:60px;"></textarea>
+                        </div>
+                        <button class="btn btn-small" id="addItemBtn">Добавить</button>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--color-parchment-darker);">
+                    <div class="compact-input">
+                        <label for="pp">Платиновые</label>
+                        <input type="number" id="pp" value="0" min="0">
+                    </div>
+                    <div class="compact-input">
+                        <label for="gp">Золотые</label>
+                        <input type="number" id="gp" value="0" min="0">
+                    </div>
+                    <div class="compact-input">
+                        <label for="sp">Серебряные</label>
+                        <input type="number" id="sp" value="0" min="0">
+                    </div>
+                    <div class="compact-input">
+                        <label for="cp">Медные</label>
+                        <input type="number" id="cp" value="0" min="0">
+                    </div>
+                    <div class="compact-input">
+                        <label for="inventoryTotal">Общая стоимость инвентаря</label>
+                        <input type="text" id="inventoryTotal" placeholder="0 зм. пока что" readonly style="background: var(--color-parchment-darker);">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        
+    // --------------------
+    // ВСТРОЕННЫЕ СЛОВАРИ (on-board dictionaries)
+    // --------------------
+        
+const translations = {
+    en: {
+        title: 'D20 Character Sheet',
+        tabCharacter: 'Character',
+        tabSkills: 'Skills',
+        tabSpells: 'Spells',
+        tabInventory: 'Inventory',
+        basicInfo: 'Basic Information',
+        charName: 'Character Name',
+        charNamePlaceholder: 'Enter name',
+        charClass: 'Class',
+        charClassPlaceholder: 'Warrior, mage, rogue...',
+        charRace: 'Race',
+        charRacePlaceholder: 'Human, elf, dwarf...',
+        stats: 'Ability Scores',
+        statStr: 'STR',
+        statDex: 'DEX',
+        statCon: 'CON',
+        statInt: 'INT',
+        statWis: 'WIS',
+        statCha: 'CHA',
+        health: 'Health and Resources',
+        currentHP: 'Current HP',
+        maxHP: 'Max HP',
+        armorClass: 'Armor Class',
+        speed: 'Speed',
+        notes: 'Notes',
+        notesPlaceholder: 'Character notes, background, traits...',
+        saveBtn: 'Save Character',
+        loadBtn: 'Load Character',
+        skills: 'Skills',
+        skillName: 'Skill Name',
+        skillNamePlaceholder: 'New skill',
+        skillBonus: 'Bonus',
+        skillBonusPlaceholder: '+5 bonus',
+        addSkill: 'Add Skill',
+        spells: 'Spells',
+        spellName: 'Spell Name',
+        spellNamePlaceholder: 'New spell',
+        spellLevel: 'Level',
+        spellSlots: 'Slots (total)',
+        spellDesc: 'Description',
+        spellDescPlaceholder: 'Effect',
+        addSpell: 'Add Spell',
+        inventory: 'Inventory',
+        coinsPP: 'Platinum',
+        coinsGP: 'Gold',
+        coinsSP: 'Silver',
+        coinsCP: 'Copper',
+        totalValue: 'Total Value',
+        itemName: 'Item Name',
+        itemNamePlaceholder: 'New item',
+        itemQuantity: 'Quantity',
+        itemPrice: 'Market Price',
+        itemPricePlaceholder: 'some gp',
+        itemDesc: 'Description',
+        itemDescPlaceholder: 'Properties',
+        addItem: 'Add Item',
+        noSkills: 'No skills added',
+        noSpells: 'No spells added',
+        noItems: 'Inventory empty',
+        savedMsg: 'Character encoded and copied to clipboard!',
+        loadedMsg: 'Character loaded!',
+        errorMsg: 'Decoding error. Check the input string.',
+        loadPrompt: 'Paste encoded character data:'
+    },
+    ru: {
+        title: 'D20 лист персонажа',
+        tabCharacter: 'Персонаж',
+        tabSkills: 'Навыки',
+        tabSpells: 'Заклинания',
+        tabInventory: 'Инвентарь',
+        basicInfo: 'Основная информация',
+        charName: 'Имя персонажа',
+        charNamePlaceholder: 'Введите имя',
+        charClass: 'Класс',
+        charClassPlaceholder: 'Воин, маг, вор...',
+        charRace: 'Раса',
+        charRacePlaceholder: 'Человек, эльф, дворф...',
+        stats: 'Характеристики',
+        statStr: 'СИЛ',
+        statDex: 'ЛВК',
+        statCon: 'ТЕЛ',
+        statInt: 'ИНТ',
+        statWis: 'МДР',
+        statCha: 'ХАР',
+        health: 'Здоровье и ресурсы',
+        currentHP: 'Текущее HP',
+        maxHP: 'Максимальное HP',
+        armorClass: 'Класс доспеха',
+        speed: 'Скорость',
+        notes: 'Заметки',
+        notesPlaceholder: 'Заметки о персонаже, история, особенности...',
+        saveBtn: 'Сохранить персонажа',
+        loadBtn: 'Загрузить персонажа',
+        skills: 'Навыки',
+        skillName: 'Название навыка',
+        skillNamePlaceholder: 'Добавить навык',
+        skillBonus: 'Бонус',
+        skillBonusPlaceholder: '+5 бонус',
+        addSkill: 'Добавить навык',
+        spells: 'Заклинания',
+        spellName: 'Название заклинания',
+        spellNamePlaceholder: 'Добавить заклинание',
+        spellLevel: 'Уровень',
+        spellSlots: 'Слоты (всего)',
+        spellDesc: 'Описание',
+        spellDescPlaceholder: 'Эффект заклинания',
+        addSpell: 'Добавить заклинание',
+        inventory: 'Инвентарь',
+        coinsPP: 'Платиновые',
+        coinsGP: 'Золотые',
+        coinsSP: 'Серебряные',
+        coinsCP: 'Медные',
+        totalValue: 'Общая стоимость инвентаря',
+        itemName: 'Название предмета',
+        itemNamePlaceholder: 'Добавить предмет',
+        itemQuantity: 'Количество',
+        itemPrice: 'Рыночная стоимость',
+        itemPricePlaceholder: 'несколько зм',
+        itemDesc: 'Описание',
+        itemDescPlaceholder: 'Свойства предмета',
+        addItem: 'Добавить предмет',
+        noSkills: 'Навыки не добавлены',
+        noSpells: 'Заклинания не добавлены',
+        noItems: 'Инвентарь пуст',
+        savedMsg: 'Персонаж закодирован и скопирован в буфер обмена!',
+        loadedMsg: 'Персонаж загружен!',
+        errorMsg: 'Ошибка декодирования данных. Проверьте правильность введенной строки.',
+        loadPrompt: 'Вставьте закодированные данные персонажа:'
+    },
+    fr: {
+        title: 'D20 Feuille de Personnage',
+        tabCharacter: 'Personnage',
+        tabSkills: 'Compétences',
+        tabSpells: 'Sorts',
+        tabInventory: 'Inventaire',
+        basicInfo: 'Informations de Base',
+        charName: 'Nom du Personnage',
+        charNamePlaceholder: 'Entrez le nom',
+        charClass: 'Classe',
+        charClassPlaceholder: 'Guerrier, mage, voleur...',
+        charRace: 'Race',
+        charRacePlaceholder: 'Humain, elfe, nain...',
+        stats: 'Caractéristiques',
+        statStr: 'FOR',
+        statDex: 'DEX',
+        statCon: 'CON',
+        statInt: 'INT',
+        statWis: 'SAG',
+        statCha: 'CHA',
+        health: 'Santé et Ressources',
+        currentHP: 'PV Actuels',
+        maxHP: 'PV Maximum',
+        armorClass: 'Classe d\'Armure',
+        speed: 'Vitesse',
+        notes: 'Notes',
+        notesPlaceholder: 'Notes sur le personnage, histoire, particularités...',
+        saveBtn: 'Sauvegarder',
+        loadBtn: 'Charger',
+        skills: 'Compétences',
+        skillName: 'Nom de la Compétence',
+        skillNamePlaceholder: 'Nouvelle compétence',
+        skillBonus: 'Bonus',
+        skillBonusPlaceholder: '+5 bonus',
+        addSkill: 'Ajouter Compétence',
+        spells: 'Sorts',
+        spellName: 'Nom du Sort',
+        spellNamePlaceholder: 'Nouveau sort',
+        spellLevel: 'Niveau',
+        spellSlots: 'Emplacements (total)',
+        spellDesc: 'Description',
+        spellDescPlaceholder: 'Effet du sort',
+        addSpell: 'Ajouter Sort',
+        inventory: 'Inventaire',
+        coinsPP: 'Platine',
+        coinsGP: 'Or',
+        coinsSP: 'Argent',
+        coinsCP: 'Cuivre',
+        totalValue: 'Valeur Totale',
+        itemName: 'Nom de l\'Objet',
+        itemNamePlaceholder: 'Nouvel objet',
+        itemQuantity: 'Quantité',
+        itemPrice: 'Prix du Marché',
+        itemPricePlaceholder: 'plusieurs ors',
+        itemDesc: 'Description',
+        itemDescPlaceholder: 'Propriétés de l\'objet...',
+        addItem: 'Ajouter Objet',
+        noSkills: 'Aucune compétence ajoutée',
+        noSpells: 'Aucun sort ajouté',
+        noItems: 'Inventaire vide',
+        savedMsg: 'Personnage encodé et copié dans le presse-papier!',
+        loadedMsg: 'Personnage chargé!',
+        errorMsg: 'Erreur de décodage. Vérifiez la chaîne.',
+        loadPrompt: 'Collez les données encodées du personnage:'
+    },
+    es: {
+        title: 'D20 Hoja de Personaje',
+        tabCharacter: 'Personaje',
+        tabSkills: 'Habilidades',
+        tabSpells: 'Hechizos',
+        tabInventory: 'Inventario',
+        basicInfo: 'Información Básica',
+        charName: 'Nombre del Personaje',
+        charNamePlaceholder: 'Ingrese el nombre',
+        charClass: 'Clase',
+        charClassPlaceholder: 'Guerrero, mago, pícaro...',
+        charRace: 'Raza',
+        charRacePlaceholder: 'Humano, elfo, enano...',
+        stats: 'Características',
+        statStr: 'FUE',
+        statDex: 'DES',
+        statCon: 'CON',
+        statInt: 'INT',
+        statWis: 'SAB',
+        statCha: 'CAR',
+        health: 'Salud y Recursos',
+        currentHP: 'PV Actuales',
+        maxHP: 'PV Máximos',
+        armorClass: 'Clase de Armadura',
+        speed: 'Velocidad',
+        notes: 'Notas',
+        notesPlaceholder: 'Notas sobre el personaje, historia, características...',
+        saveBtn: 'Guardar Personaje',
+        loadBtn: 'Cargar Personaje',
+        skills: 'Habilidades',
+        skillName: 'Nombre de Habilidad',
+        skillNamePlaceholder: 'Nueva habilidad',
+        skillBonus: 'Bonificación',
+        skillBonusPlaceholder: '+5 bonificación',
+        addSkill: 'Añadir Habilidad',
+        spells: 'Hechizos',
+        spellName: 'Nombre del Hechizo',
+        spellNamePlaceholder: 'Nuevo hechizo',
+        spellLevel: 'Nivel',
+        spellSlots: 'Espacios (total)',
+        spellDesc: 'Descripción',
+        spellDescPlaceholder: 'Efecto del hechizo',
+        addSpell: 'Añadir Hechizo',
+        inventory: 'Inventario',
+        coinsPP: 'Platino',
+        coinsGP: 'Oro',
+        coinsSP: 'Plata',
+        coinsCP: 'Cobre',
+        totalValue: 'Valor Total',
+        itemName: 'Nombre del Objeto',
+        itemNamePlaceholder: 'Nuevo objeto',
+        itemQuantity: 'Cantidad',
+        itemPrice: 'Precio de Mercado',
+        itemPricePlaceholder: 'varios oros',
+        itemDesc: 'Descripción',
+        itemDescPlaceholder: 'Propiedades del objeto',
+        addItem: 'Añadir Objeto',
+        noSkills: 'No hay habilidades añadidas',
+        noSpells: 'No hay hechizos añadidos',
+        noItems: 'Inventario vacío',
+        savedMsg: '¡Personaje codificado y copiado al portapapeles!',
+        loadedMsg: '¡Personaje cargado!',
+        errorMsg: 'Error de decodificación. Verifique la cadena.',
+        loadPrompt: 'Pegue los datos codificados del personaje:'
+    }
+};
+
+(function(){
+    const repoProvidedTranslations = window.translations || {};
+    const qs  = (sel)=>document.querySelector(sel);
+    const qsa = (sel)=>Array.from(document.querySelectorAll(sel));
+    
+    // общий скрытый измеритель ширины текста для описаний
+    const descMeasure = document.createElement('span');
+        descMeasure.style.visibility = 'hidden';
+        descMeasure.style.whiteSpace = 'pre';
+        descMeasure.style.position = 'absolute';
+        descMeasure.style.left = '-9999px';
+        document.body.appendChild(descMeasure);
+
+    // авто‑подгонка описаний: приоритет по ширине, потом по высоте
+    function autosizeDescription(textarea){
+        const style = getComputedStyle(textarea);
+        descMeasure.style.font = style.font;
+        descMeasure.textContent = textarea.value || textarea.placeholder || '';
+
+        const contentWidth = descMeasure.offsetWidth + 10; // небольшой запас
+        textarea.style.width = contentWidth + 'px';
+
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    let character = {
+        info: { name: '', race: '', class: '', level: 1 },
+        stats: { Str: 10, Dex: 10, Con: 10, Int: 10, Wis: 10, Cha: 10 },
+        hp: { current: 20, max: 20 },
+        armorClass: 10,
+        speed: 30,
+        notes: '',
+        skills: [],
+        spells: [],
+        inventory: [],
+        coins: { pp:0, gp:0, sp:0, cp:0 }
+    };
+
+    const COIN_RATES = { pp:10, gp:1, sp:0.1, cp:0.01 };
+    let currentLanguage = 'ru';
+    const translationsObj = repoProvidedTranslations && Object.keys(repoProvidedTranslations).length
+        ? repoProvidedTranslations
+        : translations;
+
+    // --------------------
+    // ВКЛАДКИ (tabs)
+    // --------------------
+    
+    function initTabs(){
+        qsa('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.getAttribute('data-tab');
+                switchTab(tab, btn);
+            });
+        });
+    }
+    function switchTab(tabName, btn){
+        qsa('.tab').forEach(t=>t.classList.remove('active'));
+        qsa('.tab-content').forEach(c=>c.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const el = document.getElementById(tabName);
+        if (el) el.classList.add('active');
+    }
+
+    // --------------------
+    // ОСНОВНЫЕ ХАРАКТЕРИСТИКИ (stats)
+    // --------------------
+    
+    function calcMod(score){
+        const s = parseInt(score)||0;
+        const m = Math.floor((s-10)/2);
+        return (m>=0?'+':'')+m;
+    }
+    function updateStatModifiers(){
+        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
+            const statEl = document.getElementById('stat'+k);
+            const modEl  = document.getElementById('mod'+k);
+            if (!statEl || !modEl) return;
+            modEl.value = calcMod(statEl.value);
+        });
+    }
+
+    // --------------------
+    // ШКАЛА ЗДОРОВЬЯ (HP bar)
+    // --------------------
+
+    function lerp(a, b, t){
+        return a + (b - a) * t;
+    }
+
+    function lerpColor(c1, c2, t){
+        const r = Math.round(lerp(c1[0], c2[0], t));
+        const g = Math.round(lerp(c1[1], c2[1], t));
+        const b = Math.round(lerp(c1[2], c2[2], t));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    const HP_RED    = [0x8b, 0x2e, 0x1f]; // --color-accent-red
+    const HP_YELLOW = [0xc1, 0x9a, 0x3d]; // --color-hp-yellow
+    const HP_GREEN  = [0x4a, 0x7c, 0x4e]; // --color-hp-green
+
+    function getHpColorByPercent(ratio){
+        const t = Math.max(0, Math.min(1, ratio));
+
+
+        if (t <= 0.5){
+            const localT = t / 0.5;          // 0..1 от красного к жёлтому
+            return lerpColor(HP_RED, HP_YELLOW, localT);
+        } else {
+            const localT = (t - 0.5) / 0.5;  // 0..1 от жёлтого к зелёному
+            return lerpColor(HP_YELLOW, HP_GREEN, localT);
+        }
+    }
+
+    function updateHealthBar(){
+        const cur = parseInt(qs('#currentHP').value) || 0;
+        const max = parseInt(qs('#maxHP').value) || 1;
+        const bar = qs('#hpBar');
+        if (!bar) return;
+        const ratio = Math.max(0, Math.min(1, cur / max));
+        bar.style.width = (ratio * 100) + '%';
+        bar.style.backgroundColor = getHpColorByPercent(ratio);
+    }
+
+    // --------------------
+    // НАВЫКИ (skills)
+    // --------------------
+    
+    function renderSkills(){
+    const container = qs('#skillsList');
+    container.innerHTML = '';
+    if (!character.skills.length){
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSkills) || 'No skills added';
+        container.appendChild(empty);
+        return;
+    }
+    character.skills.forEach((s, idx)=>{
+        const item = document.createElement('div');
+        item.className = 'item';
+
+        const info = document.createElement('div');
+        info.className = 'item-info';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = s.name;
+        nameSpan.className = 'item-name';
+
+        const bonusInput = document.createElement('input');
+        bonusInput.type = 'text';
+        bonusInput.value = s.bonus || '';
+        bonusInput.className = 'item-details';
+        bonusInput.addEventListener('input', ()=>{ character.skills[idx].bonus = bonusInput.value; });
+
+        info.appendChild(nameSpan);
+        info.appendChild(bonusInput);
+
+        const actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        const del = document.createElement('button');
+        del.className = 'btn btn-small btn-danger btn-micro';
+        del.textContent = '×';
+        del.addEventListener('click', ()=>{
+            character.skills.splice(idx,1);
+            renderSkills();
+        });
+
+        actions.appendChild(del);
+        item.appendChild(info);
+        item.appendChild(actions);
+        container.appendChild(item);
+    });
+    }
+
+    function onNewSkillNameInput(){
+        const name = qs('#newSkillName').value.trim();
+        qs('#skillsExtraFields').style.display = name ? 'block' : 'none';
+    }
+    function addSkill(){
+        const name = qs('#newSkillName').value.trim();
+        if (!name) return;
+        const bonus = qs('#newSkillBonus').value.trim();
+        character.skills.push({ name, bonus });
+        qs('#newSkillName').value = '';
+        qs('#newSkillBonus').value = '';
+        qs('#skillsExtraFields').style.display = 'none';
+        renderSkills();
+    }
+
+    // --------------------
+    // СПЕЛЛЫ (spells)
+    // --------------------
+    
+    function renderSpells(){
+    const container = qs('#spellsList');
+    container.innerHTML = '';
+    if (!character.spells.length){
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noSpells) || 'No spells added';
+        container.appendChild(empty);
+        return;
+    }
+
+    const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+    const levelLabelText = t.spellLevel || 'Level';
+    const slotsLabelText = t.spellSlots || 'Slots';
+
+    character.spells.forEach((s, idx)=>{
+        const item  = document.createElement('div');
+        item.className = 'item';
+
+        const info  = document.createElement('div');
+        info.className = 'item-info';
+
+        const name  = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = s.name;
+
+        const details = document.createElement('div');
+        details.className = 'item-details';
+
+        const metaLine = document.createElement('div');
+
+        const lvlSpan = document.createElement('span');
+        lvlSpan.textContent = levelLabelText + ': ';
+        const lvlInput = document.createElement('input');
+        lvlInput.type  = 'text';
+        lvlInput.value = (s.level ?? 0).toString();
+        lvlInput.className = 'item-details';
+        lvlInput.style.width = '60px';
+        lvlInput.addEventListener('input', ()=>{
+            const raw = lvlInput.value.trim();
+            const parsed = parseInt(raw, 10);
+            character.spells[idx].level = Number.isNaN(parsed) ? 0 : parsed;
+        });
+
+        const sepSpan = document.createElement('span');
+        sepSpan.textContent = ' · ';
+
+        const slotsSpan = document.createElement('span');
+        slotsSpan.textContent = slotsLabelText + ': ';
+        const slotsInput = document.createElement('input');
+        slotsInput.type  = 'text';
+        slotsInput.value = (s.slots ?? 0).toString();
+        slotsInput.className = 'item-details';
+        slotsInput.style.width = '60px';
+        slotsInput.addEventListener('input', ()=>{
+            const raw = slotsInput.value.trim();
+            const parsed = parseInt(raw, 10);
+            character.spells[idx].slots = Number.isNaN(parsed) ? 0 : parsed;
+        });
+
+        metaLine.appendChild(lvlSpan);
+        metaLine.appendChild(lvlInput);
+        metaLine.appendChild(sepSpan);
+        metaLine.appendChild(slotsSpan);
+        metaLine.appendChild(slotsInput);
+
+        const descArea = document.createElement('textarea');
+        descArea.value = s.desc || '';
+        descArea.rows  = 1;
+        descArea.style.overflow = 'hidden';
+        descArea.style.resize   = 'none';
+
+        const autoDesc = ()=> autosizeDescription(descArea);
+
+        descArea.addEventListener('input', ()=>{
+            character.spells[idx].desc = descArea.value;
+            autoDesc();
+        });
+
+        // начальная подгонка размера
+        setTimeout(autoDesc, 0);
+
+        details.appendChild(metaLine);
+        details.appendChild(descArea);
+
+        info.appendChild(name);
+        info.appendChild(details);
+
+        const actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        const del = document.createElement('button');
+        del.className = 'btn btn-small btn-danger btn-micro';
+        del.textContent = '×';
+        del.addEventListener('click', ()=>{
+            character.spells.splice(idx,1);
+            renderSpells();
+        });
+
+        actions.appendChild(del);
+        item.appendChild(info);
+        item.appendChild(actions);
+        container.appendChild(item);
+    });
+    }
+
+    // форма добавления заклинания
+    
+    function onNewSpellNameInput(){
+        const name=qs('#newSpellName').value.trim();
+        qs('#spellsExtraFields').style.display = name ? 'block':'none';
+    }
+    function addSpell(){
+        const name=qs('#newSpellName').value.trim();
+        if(!name) return;
+        const level=parseInt(qs('#newSpellLevel').value)||0;
+        const slots=parseInt(qs('#newSpellSlots').value)||0;
+        const desc=qs('#newSpellDesc').value.trim();
+        character.spells.push({name,level,slots,desc});
+        qs('#newSpellName').value='';
+        qs('#newSpellDesc').value='';
+        qs('#newSpellLevel').value='';
+        qs('#newSpellSlots').value='';
+        qs('#spellsExtraFields').style.display='none';
+        renderSpells();
+    }
+
+    // --------------------
+    // ИНВЕНТАРЬ (inventory)
+    // --------------------
+    
+    function renderInventory(){
+    const container = qs('#inventoryList');
+    container.innerHTML = '';
+    if (!character.inventory.length){
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noItems) || 'Inventory is empty';
+        container.appendChild(empty);
+        return;
+    }
+
+    const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+    const qtyLabelText   = t.itemQuantity || 'Quantity';
+    const priceLabelText = t.itemPrice   || 'Price';
+
+    character.inventory.forEach((it, idx)=>{
+        const item  = document.createElement('div');
+        item.className = 'item';
+
+        const info  = document.createElement('div');
+        info.className = 'item-info';
+
+        const name  = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent = it.name;
+
+        const details = document.createElement('div');
+        details.className = 'item-details';
+
+        const qtyLine = document.createElement('div');
+        const qtyLabelSpan = document.createElement('span');
+        qtyLabelSpan.textContent = qtyLabelText + ': ';
+        const qtyInput = document.createElement('input');
+            qtyInput.type  = 'text';
+            qtyInput.value = (it.quantity ?? 1).toString();
+            qtyInput.className = 'item-details';
+            qtyInput.style.width = '70px';
+            qtyInput.addEventListener('input', ()=>{
+        const raw = qtyInput.value.trim();
+        const parsed = parseInt(raw, 10);
+        character.inventory[idx].quantity = Number.isNaN(parsed) ? 1 : parsed;
+        updateInventoryTotal();
+        });
+
+        qtyLine.appendChild(qtyLabelSpan);
+        qtyLine.appendChild(qtyInput);
+
+        const priceLine = document.createElement('div');
+        priceLine.textContent = priceLabelText + ': ' + (it.price || '');
+
+        const descArea = document.createElement('textarea');
+        descArea.value = it.desc || '';
+        descArea.rows  = 1;
+        descArea.style.overflow = 'hidden';
+        descArea.style.resize   = 'none';
+
+        const autoItemDesc = ()=> autosizeDescription(descArea);
+
+        descArea.addEventListener('input', ()=>{
+            character.inventory[idx].desc = descArea.value;
+            autoItemDesc();
+        });
+
+        setTimeout(autoItemDesc, 0);
+
+
+        details.appendChild(qtyLine);
+        details.appendChild(priceLine);
+        details.appendChild(descArea);
+
+        info.appendChild(name);
+        info.appendChild(details);
+
+        const actions = document.createElement('div');
+        actions.className = 'item-actions';
+
+        const del = document.createElement('button');
+        del.className = 'btn btn-small btn-danger btn-micro';
+        del.textContent = '×';
+        del.addEventListener('click', ()=>{
+            character.inventory.splice(idx,1);
+            renderInventory();
+            updateInventoryTotal();
+        });
+
+        actions.appendChild(del);
+        item.appendChild(info);
+        item.appendChild(actions);
+        container.appendChild(item);
+    });
+}
+
+    // форма добавления нового предмета
+
+    function onNewItemNameInput(){
+        const name=qs('#ItemName').value.trim();
+        qs('#itemsExtraFields').style.display = name ? 'block':'none';
+    }
+    function addItem(){
+        const name=qs('#ItemName').value.trim();
+        if(!name) return;
+        const qty=parseInt(qs('#ItemQuantity').value)||1;
+        const price=qs('#ItemPrice').value.trim();
+        const desc=qs('#ItemDesc').value.trim();
+        character.inventory.push({name,quantity:qty,price,desc});
+        qs('#ItemName').value='';
+        qs('#ItemQuantity').value='';
+        qs('#ItemPrice').value='';
+        qs('#ItemDesc').value='';
+        qs('#itemsExtraFields').style.display='none';
+        renderInventory();
+        updateInventoryTotal();
+    }
+
+    // подсчёт стоимости инвентаря
+
+    function hasStem(word, stem, endings){
+        if (!word.includes(stem)) return false;
+        return endings.some(end => word.endsWith(end));
+    }
+    
+    function parsePriceToGP(priceStr){
+        if (!priceStr) return 0;
+        const s = String(priceStr).toLowerCase();
+
+        // выцепляем число
+        const numMatch = s.match(/([-+]?\d*\.?\d+)/);
+        if (!numMatch) return 0;
+        const val = parseFloat(numMatch[1]);
+        if (isNaN(val)) return 0;
+
+        // словарь синонимов для единиц
+        const unitMap = [
+            {
+                unit: 'pp',
+                match: str =>
+                    ['pp','platinum','пм', 'пп'].some(k => str.includes(k)) ||
+                    hasStem(str, 'платин', ['а','ы'])
+            },
+            {
+                unit: 'gp',
+                match: str =>
+                    ['gp','gold','зм', 'гп'].some(k => str.includes(k)) ||
+                    hasStem(str, 'золо', ['то','та','тых']) ||
+                    hasStem(str, 'голд', ['','а','ы']) ||
+                    hasStem(str, 'руб',  ['','ль','ля','лей'])
+            },
+            {
+                unit: 'sp',
+                match: str =>
+                    ['sp','silver','см', 'сп'].some(k => str.includes(k)) ||
+                    hasStem(str, 'серебр', ['о','а'])
+            },
+            {
+                unit: 'cp',
+                match: str =>
+                    ['cp','copper','мм', 'кп'].some(k => str.includes(k)) ||
+                    hasStem(str, 'мед',  ['ь','и','як','яка','яки','яков']) ||
+                    hasStem(str, 'коп', ['','ейка','ейки','еек'])
+            }
+        ];
+
+
+        let unit = 'gp'; // по умолчанию золото
+
+        const found = unitMap.find(m => m.match(s));
+        if (found) unit = found.unit;
+
+        switch(unit){
+            case 'pp': return val * COIN_RATES.pp;
+            case 'sp': return val * COIN_RATES.sp;
+            case 'cp': return val * COIN_RATES.cp;
+            default:   return val;
+    }
+}
+
+    function updateInventoryTotal(){
+        const pp=parseFloat(qs('#pp').value)||0;
+        const gp=parseFloat(qs('#gp').value)||0;
+        const sp=parseFloat(qs('#sp').value)||0;
+        const cp=parseFloat(qs('#cp').value)||0;
+        let total = pp*COIN_RATES.pp + gp*COIN_RATES.gp + sp*COIN_RATES.sp + cp*COIN_RATES.cp;
+        character.inventory.forEach(it=>{
+            total += parsePriceToGP(it.price) * (it.quantity||1);
+        });
+        qs('#inventoryTotal').value = total.toFixed(2) + ' gp';
+    }
+
+    // --------------------
+    // РЕЖИМ РЕДАКТИРОВАНИЯ
+    // --------------------
+    
+    let isEditMode = true;
+
+    function applyEditMode(){
+        const root = document.documentElement;
+        if (isEditMode){
+            root.classList.remove('readonly');
+        } else {
+            root.classList.add('readonly');
+        }
+    }
+
+    function initEditToggle(){
+        const toggle = document.querySelector('.mode-toggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', ()=>{
+            isEditMode = !isEditMode;
+            applyEditMode();
+        });
+    }
+  
+    // --------------------
+    // ИНТЕРНАЦИОНАЛИЗАЦИЯ (i18n)
+    // --------------------
+    
+    function initLanguage(){
+        const toggle = qs('#langToggle');
+        const dropdown = qs('#langDropdown');
+        if (toggle && dropdown){
+            toggle.addEventListener('click', ()=>{
+                dropdown.classList.toggle('active');
+            });
+            dropdown.querySelectorAll('button[data-lang]').forEach(btn=>{
+                btn.addEventListener('click', ()=>{
+                    const lang = btn.getAttribute('data-lang');
+                    setLanguage(lang);
+                    dropdown.classList.remove('active');
+                });
+            });
+        }
+        setLanguage(currentLanguage);
+    }
+
+    function setLanguage(lang){
+        if (!translationsObj[lang]) lang = 'ru';
+        currentLanguage = lang;
+        const langNames = { en:'EN', ru:'RU', fr:'FR', es:'ES' };
+        const toggle = qs('.language-toggle');
+        if (toggle) toggle.textContent = (langNames[lang]||lang.toUpperCase()) + ' ▼';
+        updateLanguage();
+    }
+
+    function updateLanguage(){
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+        if (!t) return;
+
+        const h1 = qs('h1');
+        if (h1) h1.textContent = t.title || 'D20 character sheet';
+
+        const tabs = qsa('.tab');
+        if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character';
+        if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills';
+        if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells';
+        if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
+
+        const charH2 = qsa('#character .section h2');
+        if (charH2[0]) charH2[0].textContent = t.basicInfo || '';
+        if (charH2[1]) charH2[1].textContent = t.stats || '';
+        if (charH2[2]) charH2[2].textContent = t.health || '';
+        if (charH2[3]) charH2[3].textContent = t.notes || '';
+
+        const skillsH2 = qs('#skills h2');
+        if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
+        const spellsH2 = qs('#spells h2');
+        if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
+        const invH2 = qs('#inventory h2');
+        if (invH2) invH2.textContent = t.inventory || 'Inventory';
+
+        const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
+        const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
+
+        setLabel('label[for="charName"]', t.charName || 'Character Name');
+        setPh('charName', t.charNamePlaceholder || 'Enter name');
+        setLabel('label[for="charRace"]', t.charRace || 'Race');
+        setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
+        setLabel('label[for="charClass"]', t.charClass || 'Class');
+        setPh('charClass', t.charClassPlaceholder || 'Warrior...');
+        setLabel('label[for="charLevel"]', t.charLevel || 'Level');
+
+        const statLabels = qsa('.stat-compact label');
+        if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR';
+        if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX';
+        if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON';
+        if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT';
+        if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS';
+        if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
+
+        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP');
+        setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP');
+        setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class');
+        setLabel('label[for="speed"]', t.speed || 'Speed');
+        setPh('notes', t.notesPlaceholder || 'Notes...');
+
+        const saveBtn = qs('#saveBtn');
+        if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character';
+        const loadBtn = qs('#loadBtn');
+        if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
+
+        // навыки
+            setPh('newSkillName', t.skillNamePlaceholder || 'New skill');
+            setPh('newSkillBonus', t.skillBonusPlaceholder || '+0');
+            const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
+
+        // заклинания
+            setPh('newSpellName', t.spellNamePlaceholder || 'New spell');
+            const spellLevelLabel = qs('label[for="newSpellLevel"]');
+            if (spellLevelLabel) spellLevelLabel.textContent = t.spellLevel || 'Level';
+            const spellSlotsLabel = qs('label[for="newSpellSlots"]');
+            if (spellSlotsLabel) spellSlotsLabel.textContent = t.spellSlots || 'Slots (total)';
+            const spellDescLabel = qs('label[for="newSpellDesc"]');
+            if (spellDescLabel) spellDescLabel.textContent = t.spellDesc || 'Description';
+            setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect');
+            const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
+
+        // Inventory add-form
+            setPh('ItemName', t.itemNamePlaceholder || 'New item');
+            setPh('ItemPrice', t.itemPricePlaceholder || 'some gp');
+            setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties');
+            const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
+
+        // монеты и общая сумма
+            setLabel('label[for="pp"]', t.coinsPP || 'Platinum');
+            setLabel('label[for="gp"]', t.coinsGP || 'Gold');
+            setLabel('label[for="sp"]', t.coinsSP || 'Silver');
+            setLabel('label[for="cp"]', t.coinsCP || 'Copper');
+            setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
+
+        // Quantity and numeric placeholders
+            setPh('ItemQuantity', t.itemQuantity || 'Quantity');
+            const spellLevelInput = qs('#newSpellLevel');
+            if (spellLevelInput) spellLevelInput.placeholder = t.spellLevel || 'Level';
+            const spellSlotsInput = qs('#newSpellSlots');
+            if (spellSlotsInput) spellSlotsInput.placeholder = t.spellSlots || 'Slots (total)';
+
+        renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+    }
+
+    // persistence
+    function encodeCharacter(){
+        const payload = Object.assign({}, character, { _meta:{ver:1} });
+        return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    }
+    function decodeCharacter(str){
+        try{
+            const json = decodeURIComponent(escape(atob(str)));
+            return JSON.parse(json);
+        }catch(e){
+            return null;
+        }
+    }
+
+    function saveCharacter(){
+        character.info.name  = qs('#charName').value.trim();
+        character.info.race  = qs('#charRace').value.trim();
+        character.info.class = qs('#charClass').value.trim();
+
+        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
+            const el=document.getElementById('stat'+k);
+            if(el) character.stats[k]=parseInt(el.value)||10;
+        });
+
+        character.hp.current = parseInt(qs('#currentHP').value)||0;
+        character.hp.max     = parseInt(qs('#maxHP').value)||1;
+        character.armorClass = parseInt(qs('#armorClass').value)||0;
+        character.speed      = parseInt(qs('#speed').value)||0;
+        character.notes      = qs('#notes').value || '';
+
+        character.coins.pp = parseFloat(qs('#pp').value)||0;
+        character.coins.gp = parseFloat(qs('#gp').value)||0;
+        character.coins.sp = parseFloat(qs('#sp').value)||0;
+        character.coins.cp = parseFloat(qs('#cp').value)||0;
+
+        const encoded = encodeCharacter();
+        try{
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(encoded);
+            }
+        }catch(e){}
+
+        localStorage.setItem('d20_character', encoded);
+        alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].savedMsg) || 'Character encoded and copied to clipboard!');
+    }
+
+    function loadCharacter(){
+        const stored = localStorage.getItem('d20_character');
+        let data = null;
+        if (stored) data = decodeCharacter(stored);
+        if (!data){
+            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:');
+            if (!pasted) return;
+            data = decodeCharacter(pasted);
+            if (!data){
+                alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
+                return;
+            }
+        }
+        try{
+            if (data.info)  character.info  = Object.assign(character.info, data.info);
+            if (data.stats) character.stats = Object.assign(character.stats, data.stats);
+            if (data.hp)    character.hp    = Object.assign(character.hp, data.hp);
+            if (data.coins) character.coins = Object.assign(character.coins, data.coins);
+
+            character.skills    = Array.isArray(data.skills)?data.skills:character.skills;
+            character.spells    = Array.isArray(data.spells)?data.spells:character.spells;
+            character.inventory = Array.isArray(data.inventory)?data.inventory:character.inventory;
+
+            character.armorClass = data.armorClass || character.armorClass;
+            character.speed      = data.speed || character.speed;
+            character.notes      = data.notes || character.notes;
+
+            qs('#charName').value = character.info.name || '';
+            qs('#charRace').value = character.info.race || '';
+            qs('#charClass').value = character.info.class || '';
+
+            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
+                const el=document.getElementById('stat'+k);
+                if(el) el.value = character.stats[k] || 10;
+            });
+            updateStatModifiers();
+
+            qs('#currentHP').value = character.hp.current || 0;
+            qs('#maxHP').value     = character.hp.max || 1;
+            updateHealthBar();
+
+            qs('#armorClass').value = character.armorClass || 0;
+            qs('#speed').value      = character.speed || 0;
+            qs('#notes').value      = character.notes || '';
+
+            qs('#pp').value = character.coins.pp || 0;
+            qs('#gp').value = character.coins.gp || 0;
+            qs('#sp').value = character.coins.sp || 0;
+            qs('#cp').value = character.coins.cp || 0;
+
+            renderSkills();
+            renderSpells();
+            renderInventory();
+            updateInventoryTotal();
+
+            alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadedMsg) || 'Character loaded!');
+        }catch(e){
+            console.error(e);
+            alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
+        }
+    }
+
+    // wiring
+    function wireUp(){
+        qsa('.stat-value').forEach(inp=> inp.addEventListener('input', updateStatModifiers));
+        qs('#currentHP').addEventListener('input', updateHealthBar);
+        qs('#maxHP').addEventListener('input', updateHealthBar);
+
+        qs('#newSkillName').addEventListener('input', onNewSkillNameInput);
+        qs('#addSkillBtn').addEventListener('click', addSkill);
+
+        qs('#newSpellName').addEventListener('input', onNewSpellNameInput);
+        qs('#addSpellBtn').addEventListener('click', addSpell);
+
+        qs('#ItemName').addEventListener('input', onNewItemNameInput);
+        qs('#addItemBtn').addEventListener('click', addItem);
+
+        ['pp','gp','sp','cp'].forEach(id=>{
+            const el=qs('#'+id);
+            if(el) el.addEventListener('input', updateInventoryTotal);
+        });
+
+        qs('#saveBtn').addEventListener('click', saveCharacter);
+        qs('#loadBtn').addEventListener('click', loadCharacter);
+
+        updateStatModifiers();
+        updateHealthBar();
+        renderSkills();
+        renderSpells();
+        renderInventory();
+        updateInventoryTotal();
+    }
+
+    initTabs();
+    initLanguage();
+    wireUp();
+    updateLanguage();
+
+    window.d20 = { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem };
+})();
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+        initLanguage();
+        loadFromLocalStorage();
+        renderAllSections();
+        attachEventListeners();
+        initEditToggle();
+        applyEditMode();
+        
+    const notes = document.getElementById('notes');
+    if (notes){
+        notes.style.overflow = 'hidden';
+        notes.style.resize   = 'none';
+
+        const autoNotes = ()=> autosizeDescription(notes);
+        notes.addEventListener('input', autoNotes);
+        setTimeout(autoNotes, 0);
+    }
+});
+
+</script>
 </body>
 </html>
+</DOCUMENT>
