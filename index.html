@@ -1,4 +1,3 @@
-<DOCUMENT filename="index.html">
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -61,159 +60,135 @@
             z-index: 1;
         }
 
-      .top-right-controls {
-  position: fixed;
-  top: 14px;   
-  right: 14px;    
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 9999; 
-  pointer-events: auto;
-}
+        /* --- Unified toggle & lang‑scroll styles --- */
+        .toggle-core {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          gap: 6px;
+          transform: scale(0.95);
+          user-select: none;
+        }
 
-@media (max-width: 640px) {
-  .top-right-controls {
-    top: 10px;
-    right: 8px;
-    gap: 8px;
-  }
-  h1 { margin-top: 56px; }
-}
-        
-      .toggle-core {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  gap: 6px;
-  transform: scale(0.95);
-  user-select: none;
-}
+        .toggle-grid.grid-2x2 { display: grid; grid-template-columns: repeat(2, auto); grid-template-rows: repeat(2, auto); gap: 6px; }
+        .toggle-row { display:flex; gap:6px; align-items:center; }
 
-/* language 2x2 */
-.toggle-grid.grid-2x2 {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  grid-template-rows: repeat(2, auto);
-  gap: 6px;
-}
+        .toggle-core .circle {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.6rem;
+          font-weight: 700;
+          color: var(--color-parchment);
+          background: var(--color-parchment-darker);
+          transition: transform 180ms ease, opacity 180ms ease, background-color 180ms;
+          box-shadow: 0 1px 2px rgba(44,24,16,0.18);
+          pointer-events: auto;
+        }
 
-/* mode row */
-.toggle-row { display:flex; gap:6px; align-items:center; }
+        /* common active/inactive */
+        .toggle-core .circle.active {
+          transform: scale(1);
+          opacity: 1;
+          background: var(--color-accent-gold);
+          color: var(--color-parchment);
+        }
+        .toggle-core .circle.inactive {
+          transform: scale(0.5);
+          opacity: 0.5;
+          background: var(--color-parchment-darker);
+          color: var(--color-parchment);
+        }
 
-/* circles (small) */
-.toggle-core .circle {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--color-parchment);
-  background: var(--color-parchment-darker);
-  transition: transform 180ms ease, opacity 180ms ease, background-color 180ms;
-  box-shadow: 0 1px 2px rgba(44,24,16,0.18);
-  pointer-events: auto;
-}
+        /* mode-specific colors (only for mode toggle) */
+        .mode-toggle .circle[data-mode="read"].active { background: var(--color-hp-green); color: var(--color-parchment); }
+        .mode-toggle .circle[data-mode="edit"].active { background: var(--color-accent-red); color: var(--color-parchment); }
+        /* mode-toggle inactive border (black) */
+        .mode-toggle .circle.inactive { border: 1px solid rgba(0,0,0,0.9); box-shadow: 0 1px 2px rgba(44,24,16,0.18), inset 0 0 0 1px rgba(0,0,0,0.03); }
 
-/* active = normal size; inactive = half size */
-.toggle-core .circle.active {
-  transform: scale(1);
-  opacity: 1;
-  background: var(--color-accent-gold);
-  color: var(--color-parchment);
-}
-.toggle-core .circle.inactive {
-  transform: scale(0.5);
-  opacity: 0.5;
-  background: var(--color-parchment-darker);
-  color: var(--color-parchment);
-     border: 1px solid rgba(0,0,0,0.9);
-  box-shadow: 0 1px 2px rgba(44,24,16,0.18), inset 0 0 0 1px rgba(0,0,0,0.03);
-  border-radius: 50%;
-}
+        .toggle-core .lens {
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          border: 2px solid rgba(44,24,16,0.95);
+          background: transparent;
+          pointer-events: none;
+          box-shadow: 0 1px 0 var(--color-parchment);
+          transition: left 180ms ease, top 180ms ease;
+          z-index: 10;
+        }
 
-/* lens slightly larger than circle to form outline */
-.toggle-core .lens {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid rgba(44,24,16,0.95);
-  background: transparent;
-  pointer-events: none;
-  box-shadow: 0 1px 0 var(--color-parchment);
-  transition: left 180ms ease, top 180ms ease;
-  z-index: 10;
-}
+        /* lang-scroll SVG specific */
+        .lang-scroll { cursor: pointer; display:inline-block; line-height:0; }
+        .scroll-icon { width: 48px; height: 68px; display:block; }
+        .lang-circle { transition: fill 220ms ease, stroke 220ms ease, transform 220ms ease; }
+        .lang-circle.active { fill: #fff; stroke: rgba(0,0,0,0.85); transform: scale(1.05); }
+        .lang-circle.inactive { fill: var(--color-parchment-darker); stroke: rgba(0,0,0,0.9); transform: scale(0.6); }
+        .lang-text { transition: opacity 220ms ease, transform 220ms ease; pointer-events: none; }
+        .lang-text.active { fill: var(--color-ink); opacity: 1; transform: translateY(0); font-weight:800; }
+        .lang-text.inactive { fill: var(--color-parchment); opacity: 0.9; transform: translateY(0); }
+        .lang-shift-out { opacity: 0; transform: translateY(6px) scale(0.9); }
+        .lang-shift-in  { opacity: 1; transform: translateY(0) scale(1); }
 
-        /* Mode‑specific colors: only for the mode toggle (read / edit) */
-/* Read = зелёный, Edit = красный (active state) */
-.mode-toggle .circle[data-mode="read"].active {
-  background: var(--color-hp-green);
-  color: var(--color-parchment);
-}
-.mode-toggle .circle[data-mode="edit"].active {
-  background: var(--color-accent-red);
-  color: var(--color-parchment);
-}
+        /* inline tooltip (used by JS) */
+        .inline-tooltip {
+          position: absolute;
+          bottom: -40px;
+          right: 0;
+          background: rgba(244,232,208,0.95);
+          color: var(--color-ink);
+          padding: 6px 10px;
+          border-radius: 6px;
+          box-shadow: 0 4px 12px rgba(44,24,16,0.18);
+          font-size: 0.85rem;
+          z-index: 50;
+          white-space: nowrap;
+        }
 
-/* Optionally ensure inactive mode visuals (applies to mode toggle too) */
-.mode-toggle .circle.inactive {
-  background: var(--color-parchment-darker) !important;
-  color: var(--color-parchment) !important;
-  opacity: 0.5;
-  transform: scale(0.5);
-}
+        /* center toast */
+        .center-toast {
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%) scale(0.98);
+          background: rgba(244,232,208,0.95);
+          color: var(--color-ink);
+          padding: 12px 16px;
+          border-radius: 8px;
+          box-shadow: 0 10px 30px rgba(44,24,16,0.25);
+          font-weight: 700;
+          z-index: 9999;
+          opacity: 0;
+          transition: opacity 200ms, transform 200ms;
+        }
+        .center-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-/* Keep language toggle colors unchanged — ensure generic .toggle-core .circle.active remains in effect for lang */
-.lang-toggle .circle.active {
-  /* Intentionally empty — fall back to .toggle-core .circle.active (gold) */
-}
+        /* top-right placement: fixed */
+        .top-right-controls {
+          position: fixed;
+          top: 14px;
+          right: 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          z-index: 9999;
+          pointer-events: auto;
+        }
 
-/* Inline tooltip style (JS toggles presence) */
-.inline-tooltip {
-  position: absolute;
-  bottom: -40px;
-  right: 0;
-  background: rgba(244,232,208,0.95);
-  color: var(--color-ink);
-  padding: 6px 10px;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(44,24,16,0.18);
-  font-size: 0.85rem;
-  z-index: 50;
-  white-space: nowrap;
-}
+        /* safety: make room on small screens for controls */
+        @media (max-width: 640px) {
+          .scroll-icon { width: 40px; height: 56px; }
+          .top-right-controls { top: 10px; right: 8px; gap: 8px; }
+          h1 { margin-top: 56px; }
+        }
 
-/* center toast */
-.center-toast {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0.98);
-  background: rgba(244,232,208,0.95);
-  color: var(--color-ink);
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(44,24,16,0.25);
-  font-weight: 700;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 200ms, transform 200ms;
-}
-.center-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-
-/* small-screen safety */
-@media (max-width: 640px) {
-  h1 { margin-top: 42px; }
-  .top-right-controls { right: 8px; top: 6px; gap: 8px; }
-}
-
+        /* rest of original styles (kept) */
         .compact-input {
             display: flex;
             align-items: center;
@@ -257,7 +232,7 @@
             font-size: 1.4rem;
             font-weight: bold;
             text-align: center;
-            text-shadow: 
+            text-shadow:
                 0 3px 6px rgba(74, 52, 40, 0.8),
                 0 6px 12px rgba(74, 52, 40, 0.7),
                 0 9px 18px rgba(74, 52, 40, 0.6),
@@ -280,7 +255,7 @@
             font-weight: bold;
             font-variant: small-caps;
             letter-spacing: 1px;
-            text-shadow: 
+            text-shadow:
                 0 2px 5px rgba(74, 52, 40, 0.8),
                 0 4px 10px rgba(74, 52, 40, 0.7),
                 0 6px 15px rgba(74, 52, 40, 0.6),
@@ -294,8 +269,8 @@
             padding: 20px;
             border-radius: 4px;
             margin-bottom: 20px;
-            box-shadow: 
-                0 4px 8px rgba(44, 24, 16, 0.15), 
+            box-shadow:
+                0 4px 8px rgba(44, 24, 16, 0.15),
                 inset 0 0 30px rgba(212, 195, 165, 0.3);
             position: relative;
         }
@@ -307,7 +282,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: 
+            background-image:
                 url('https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/fee152f2-a72d-40e3-8a44-742260cdc187');
             background-size: 400px;
             background-repeat: repeat;
@@ -353,7 +328,7 @@
             font-size: 0.875rem;
             font-weight: 600;
             color: #fff;
-            text-shadow: 
+            text-shadow:
                 0 1px 3px rgba(74, 52, 40, 0.8),
                 0 2px 6px rgba(74, 52, 40, 0.7),
                 0 3px 9px rgba(74, 52, 40, 0.6),
@@ -388,13 +363,12 @@
             box-sizing: border-box;
         }
 
-
         .item-details {
             font-size: 0.85rem;
             color: var(--color-ink-light);
             font-style: italic;
         }
-        
+
         .item-details input,
         .item-details textarea {
             font-family: inherit;
@@ -409,7 +383,7 @@
             padding: 12px;
             border-radius: 50%;
             text-align: center;
-            box-shadow: 
+            box-shadow:
                 inset 0 2px 4px rgba(44, 24, 16, 0.1),
                 0 4px 8px rgba(44, 24, 16, 0.2);
             position: relative;
@@ -551,7 +525,7 @@
         .item-name {
             font-weight: 700;
             color: #fff;
-            text-shadow: 
+            text-shadow:
                 0 1px 3px rgba(74, 52, 40, 0.8),
                 0 2px 6px rgba(74, 52, 40, 0.7),
                 0 3px 9px rgba(74, 52, 40, 0.6),
@@ -683,7 +657,7 @@
 
         .progress-bar {
             width: 100%;
-            height: 12px; /* было 18px */
+            height: 12px;
             background: var(--color-parchment-darker);
             border-radius: 4px;
             overflow: hidden;
@@ -696,7 +670,6 @@
             transition: width 0.3s, background-color 0.2s ease;
             border-radius: 4px;
         }
-
 
         .empty-state {
             text-align: center;
@@ -718,26 +691,60 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    
-    <div class="top-right-controls">
-  <div class="toggle-core lang-toggle" id="langToggle" role="button" tabindex="0" aria-label="Язык" data-selected="ru">
-    <div class="toggle-grid grid-2x2" aria-hidden="true">
-      <div class="circle" data-lang="ru" aria-label="Русский">RU</div>
-      <div class="circle" data-lang="en" aria-label="English">EN</div>
-      <div class="circle" data-lang="es" aria-label="Español">ES</div>
-      <div class="circle" data-lang="fr" aria-label="Français">FR</div>
-    </div>
-    <div class="lens" aria-hidden="true"></div>
-  </div>
 
-  <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Режим" data-state="edit">
-    <div class="toggle-row" aria-hidden="true">
-      <div class="circle" data-mode="read" aria-label="Режим чтения"></div>
-      <div class="circle" data-mode="edit" aria-label="Режим редактирования"></div>
-    </div>
-    <div class="lens" aria-hidden="true"></div>
-  </div>
-</div>
+    <div class="container">
+        <div class="top-right-controls">
+          <!-- SVG language "scroll" toggle (4 positions) -->
+          <div class="lang-scroll" id="langScrollToggle" role="button" tabindex="0" aria-label="Language toggle" data-selected="ru" aria-live="polite">
+            <svg class="scroll-icon" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" width="48" height="68" preserveAspectRatio="xMidYMid meet" aria-hidden="false">
+              <defs>
+                <filter id="inner-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+                  <feComposite in="blur" in2="SourceAlpha" operator="out" result="inv-alpha"/>
+                  <feFlood flood-color="#000" flood-opacity="0.45" result="color"/>
+                  <feComposite in="color" in2="inv-alpha" operator="in" result="inner"/>
+                  <feComposite in="inner" in2="SourceGraphic" operator="over"/>
+                </filter>
+              </defs>
+
+              <path d="M 18 18 Q 5 30 18 42 L 18 98 Q 5 110 18 122 L 82 122 Q 95 110 82 98 L 82 42 Q 95 30 82 18 Z"
+                    class="scroll-body" fill="#ffffff" stroke="#000" stroke-width="3" filter="url(#inner-glow)"/>
+
+              <rect x="8" y="12" width="84" height="12" fill="#000" rx="2" ry="2"/>
+              <rect x="8" y="116" width="84" height="12" fill="#000" rx="2" ry="2"/>
+
+              <g fill="none" stroke="#000" stroke-width="3">
+                <circle cx="8" cy="18" r="8"/>
+                <circle cx="92" cy="18" r="8"/>
+                <circle cx="8" cy="122" r="8"/>
+                <circle cx="92" cy="122" r="8"/>
+              </g>
+
+              <g class="lang-circles" aria-hidden="true">
+                <circle class="lang-circle" data-pos="1" id="pos1" cx="50" cy="82" r="12" stroke="#000" stroke-width="2.5" fill="var(--color-parchment-darker)"/>
+                <circle class="lang-circle" data-pos="2" id="pos2" cx="70" cy="105" r="8" stroke="#000" stroke-width="2.5" fill="var(--color-parchment-darker)"/>
+                <circle class="lang-circle" data-pos="3" id="pos3" cx="50" cy="38" r="8"  stroke="#000" stroke-width="2.5" fill="var(--color-parchment-darker)"/>
+                <circle class="lang-circle" data-pos="4" id="pos4" cx="30" cy="105" r="8" stroke="#000" stroke-width="2.5" fill="var(--color-parchment-darker)"/>
+              </g>
+
+              <g class="lang-labels" font-family="Palatino, Georgia, serif" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="var(--color-parchment)">
+                <text class="lang-text" data-pos="1" x="50" y="82" font-size="7">RU</text>
+                <text class="lang-text" data-pos="2" x="70" y="105" font-size="6">EN</text>
+                <text class="lang-text" data-pos="3" x="50" y="38" font-size="6">FR</text>
+                <text class="lang-text" data-pos="4" x="30" y="105" font-size="6">ES</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Mode selector: two circles (read/edit) -->
+          <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Mode toggle" data-state="edit">
+            <div class="toggle-row" aria-hidden="true">
+              <div class="circle" data-mode="read" aria-label="Read mode"></div>
+              <div class="circle" data-mode="edit" aria-label="Edit mode"></div>
+            </div>
+            <div class="lens" aria-hidden="true"></div>
+          </div>
+        </div>
 
         <h1>D20 лист персонажа</h1>
 
@@ -933,14 +940,9 @@
     </div>
 
     <script>
-        
     // --------------------
-    // ВСТРОЕННЫЕ СЛОВАРИ (on-board dictionaries)
+    // TRANSLATIONS (extended with tooltip/toast keys)
     // --------------------
-        
-// Full JS block for index.html (exclude external libraries). Paste into a <script> tag.
-// Implements translations, UI logic, tabs, data model, persistence, and unified toggles.
-
 const translations = {
     en: {
         title: 'D20 Character Sheet',
@@ -1005,7 +1007,14 @@ const translations = {
         savedMsg: 'Character encoded and copied to clipboard!',
         loadedMsg: 'Character loaded!',
         errorMsg: 'Decoding error. Check the input string.',
-        loadPrompt: 'Paste encoded character data:'
+        loadPrompt: 'Paste encoded character data:',
+        // new keys for toggles
+        modeReadLabel: 'Read mode',
+        modeEditLabel: 'Edit mode',
+        toastModeRead: 'Read mode',
+        toastModeEdit: 'Edit mode',
+        langSelectedPrefix: 'Selected language: ',
+        langToastPrefix: 'Language: '
     },
     ru: {
         title: 'D20 лист персонажа',
@@ -1070,7 +1079,14 @@ const translations = {
         savedMsg: 'Персонаж закодирован и скопирован в буфер обмена!',
         loadedMsg: 'Персонаж загружен!',
         errorMsg: 'Ошибка декодирования данных. Проверьте правильность введенной строки.',
-        loadPrompt: 'Вставьте закодированные данные персонажа:'
+        loadPrompt: 'Вставьте закодированные данные персонажа:',
+        // new keys
+        modeReadLabel: 'Режим чтения',
+        modeEditLabel: 'Режим редактирования',
+        toastModeRead: 'Режим чтения',
+        toastModeEdit: 'Режим редактирования',
+        langSelectedPrefix: 'Выбран язык: ',
+        langToastPrefix: 'Язык: '
     },
     fr: {
         title: 'D20 Feuille de Personnage',
@@ -1135,7 +1151,14 @@ const translations = {
         savedMsg: 'Personnage encodé et copié dans le presse-papier!',
         loadedMsg: 'Personnage chargé!',
         errorMsg: 'Erreur de décodage. Vérifiez la chaîne.',
-        loadPrompt: 'Collez les données encodées du personnage:'
+        loadPrompt: 'Collez les données encodées du personnage:',
+        // new keys
+        modeReadLabel: 'Mode lecture',
+        modeEditLabel: 'Mode édition',
+        toastModeRead: 'Mode lecture',
+        toastModeEdit: 'Mode édition',
+        langSelectedPrefix: 'Langue sélectionnée: ',
+        langToastPrefix: 'Langue: '
     },
     es: {
         title: 'D20 Hoja de Personaje',
@@ -1200,7 +1223,14 @@ const translations = {
         savedMsg: '¡Personaje codificado y copiado al portapapeles!',
         loadedMsg: '¡Personaje cargado!',
         errorMsg: 'Error de decodificación. Verifique la cadena.',
-        loadPrompt: 'Pegue los datos codificados del personaje:'
+        loadPrompt: 'Pegue los datos codificados del personaje:',
+        // new keys
+        modeReadLabel: 'Modo lectura',
+        modeEditLabel: 'Modo edición',
+        toastModeRead: 'Modo lectura',
+        toastModeEdit: 'Modo edición',
+        langSelectedPrefix: 'Idioma seleccionado: ',
+        langToastPrefix: 'Idioma: '
     }
 };
 
@@ -1208,14 +1238,14 @@ const translations = {
     const repoProvidedTranslations = window.translations || {};
     const qs  = (sel)=>document.querySelector(sel);
     const qsa = (sel)=>Array.from(document.querySelectorAll(sel));
-    
-    // скрытый измеритель ширины текста
+
+    // measurement element for autogrow
     const descMeasure = document.createElement('span');
-    descMeasure.style.visibility = 'hidden';
-    descMeasure.style.whiteSpace = 'pre';
-    descMeasure.style.position = 'absolute';
-    descMeasure.style.left = '-9999px';
-    document.body.appendChild(descMeasure);
+        descMeasure.style.visibility = 'hidden';
+        descMeasure.style.whiteSpace = 'pre';
+        descMeasure.style.position = 'absolute';
+        descMeasure.style.left = '-9999px';
+        document.body.appendChild(descMeasure);
 
     function autosizeDescription(textarea){
         const style = getComputedStyle(textarea);
@@ -1263,7 +1293,6 @@ const translations = {
         if (el) el.classList.add('active');
     }
 
-    // Stats
     function calcMod(score){
         const s = parseInt(score)||0;
         const m = Math.floor((s-10)/2);
@@ -1278,8 +1307,10 @@ const translations = {
         });
     }
 
-    // HP bar color
-    function lerp(a, b, t){ return a + (b - a) * t; }
+    // HP bar
+    function lerp(a, b, t){
+        return a + (b - a) * t;
+    }
     function lerpColor(c1, c2, t){
         const r = Math.round(lerp(c1[0], c2[0], t));
         const g = Math.round(lerp(c1[1], c2[1], t));
@@ -1309,9 +1340,10 @@ const translations = {
         bar.style.backgroundColor = getHpColorByPercent(ratio);
     }
 
-    // Render lists (skills / spells / inventory)
+    // Skills / Spells / Inventory renderers (same as before)
     function renderSkills(){
-        const container = qs('#skillsList'); container.innerHTML = '';
+        const container = qs('#skillsList');
+        container.innerHTML = '';
         if (!character.skills.length){
             const empty = document.createElement('div');
             empty.className = 'empty-state';
@@ -1320,7 +1352,8 @@ const translations = {
             return;
         }
         character.skills.forEach((s, idx)=>{
-            const item = document.createElement('div'); item.className = 'item';
+            const item = document.createElement('div');
+            item.className = 'item';
             const info = document.createElement('div'); info.className = 'item-info';
             const nameSpan = document.createElement('span'); nameSpan.textContent = s.name; nameSpan.className = 'item-name';
             const bonusInput = document.createElement('input'); bonusInput.type = 'text'; bonusInput.value = s.bonus || ''; bonusInput.className = 'item-details';
@@ -1375,11 +1408,14 @@ const translations = {
     function addSpell(){ const name=qs('#newSpellName').value.trim(); if(!name) return; const level=parseInt(qs('#newSpellLevel').value)||0; const slots=parseInt(qs('#newSpellSlots').value)||0; const desc=qs('#newSpellDesc').value.trim(); character.spells.push({name,level,slots,desc}); qs('#newSpellName').value=''; qs('#newSpellDesc').value=''; qs('#newSpellLevel').value=''; qs('#newSpellSlots').value=''; qs('#spellsExtraFields').style.display='none'; renderSpells(); }
 
     function renderInventory(){
-        const container = qs('#inventoryList'); container.innerHTML = '';
+        const container = qs('#inventoryList');
+        container.innerHTML = '';
         if (!character.inventory.length){
-            const empty = document.createElement('div'); empty.className = 'empty-state';
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
             empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noItems) || 'Inventory is empty';
-            container.appendChild(empty); return;
+            container.appendChild(empty);
+            return;
         }
         const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
         const qtyLabelText   = t.itemQuantity || 'Quantity';
@@ -1410,13 +1446,18 @@ const translations = {
     function onNewItemNameInput(){ const name=qs('#ItemName').value.trim(); qs('#itemsExtraFields').style.display = name ? 'block':'none'; }
     function addItem(){ const name=qs('#ItemName').value.trim(); if(!name) return; const qty=parseInt(qs('#ItemQuantity').value)||1; const price=qs('#ItemPrice').value.trim(); const desc=qs('#ItemDesc').value.trim(); character.inventory.push({name,quantity:qty,price,desc}); qs('#ItemName').value=''; qs('#ItemQuantity').value=''; qs('#ItemPrice').value=''; qs('#ItemDesc').value=''; qs('#itemsExtraFields').style.display='none'; renderInventory(); updateInventoryTotal(); }
 
-    function hasStem(word, stem, endings){ if (!word.includes(stem)) return false; return endings.some(end => word.endsWith(end)); }
+    function hasStem(word, stem, endings){
+        if (!word.includes(stem)) return false;
+        return endings.some(end => word.endsWith(end));
+    }
+
     function parsePriceToGP(priceStr){
         if (!priceStr) return 0;
         const s = String(priceStr).toLowerCase();
         const numMatch = s.match(/([-+]?\d*\.?\d+)/);
         if (!numMatch) return 0;
-        const val = parseFloat(numMatch[1]); if (isNaN(val)) return 0;
+        const val = parseFloat(numMatch[1]);
+        if (isNaN(val)) return 0;
         const unitMap = [
             { unit: 'pp', match: str => ['pp','platinum','пм', 'пп'].some(k => str.includes(k)) || hasStem(str, 'платин', ['а','ы']) },
             { unit: 'gp', match: str => ['gp','gold','зм', 'гп'].some(k => str.includes(k)) || hasStem(str, 'золо', ['то','та','тых']) || hasStem(str, 'голд', ['','а','ы']) || hasStem(str, 'руб',  ['','ль','ля','лей']) },
@@ -1433,320 +1474,466 @@ const translations = {
             default:   return val;
         }
     }
+
     function updateInventoryTotal(){
-        const pp=parseFloat(qs('#pp').value)||0; const gp=parseFloat(qs('#gp').value)||0; const sp=parseFloat(qs('#sp').value)||0; const cp=parseFloat(qs('#cp').value)||0;
+        const pp=parseFloat(qs('#pp').value)||0;
+        const gp=parseFloat(qs('#gp').value)||0;
+        const sp=parseFloat(qs('#sp').value)||0;
+        const cp=parseFloat(qs('#cp').value)||0;
         let total = pp*COIN_RATES.pp + gp*COIN_RATES.gp + sp*COIN_RATES.sp + cp*COIN_RATES.cp;
-        character.inventory.forEach(it=>{ total += parsePriceToGP(it.price) * (it.quantity||1); });
+        character.inventory.forEach(it=>{
+            total += parsePriceToGP(it.price) * (it.quantity||1);
+        });
         qs('#inventoryTotal').value = total.toFixed(2) + ' gp';
     }
 
-    // Edit mode
-    let isEditMode = true;
-    function applyEditMode(){ const root = document.documentElement; if (isEditMode) root.classList.remove('readonly'); else root.classList.add('readonly'); }
-
-    // i18n
-    function initLanguage(){ setLanguage(currentLanguage); }
-    function setLanguage(lang){
-        if (!translationsObj[lang]) lang = 'ru';
-        currentLanguage = lang;
-        const toggle = qs('#langToggle'); if (toggle) toggle.dataset.selected = lang;
-        updateLanguage();
-    }
-    function updateLanguage(){
-        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {}; if (!t) return;
-        const h1 = qs('h1'); if (h1) h1.textContent = t.title || 'D20 character sheet';
-        const tabs = qsa('.tab'); if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character'; if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills'; if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells'; if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
-        const charH2 = qsa('#character .section h2'); if (charH2[0]) charH2[0].textContent = t.basicInfo || ''; if (charH2[1]) charH2[1].textContent = t.stats || ''; if (charH2[2]) charH2[2].textContent = t.health || ''; if (charH2[3]) charH2[3].textContent = t.notes || '';
-        const skillsH2 = qs('#skills h2'); if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
-        const spellsH2 = qs('#spells h2'); if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
-        const invH2 = qs('#inventory h2'); if (invH2) invH2.textContent = t.inventory || 'Inventory';
-        const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
-        const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
-        setLabel('label[for="charName"]', t.charName || 'Character Name'); setPh('charName', t.charNamePlaceholder || 'Enter name');
-        setLabel('label[for="charRace"]', t.charRace || 'Race'); setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
-        setLabel('label[for="charClass"]', t.charClass || 'Class'); setPh('charClass', t.charClassPlaceholder || 'Warrior...');
-        const statLabels = qsa('.stat-compact label'); if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR'; if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX'; if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON'; if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT'; if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS'; if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
-        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP'); setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP'); setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class'); setLabel('label[for="speed"]', t.speed || 'Speed'); setPh('notes', t.notesPlaceholder || 'Notes...');
-        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character'; const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
-        setPh('newSkillName', t.skillNamePlaceholder || 'New skill'); setPh('newSkillBonus', t.skillBonusPlaceholder || '+0'); const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
-        setPh('newSpellName', t.spellNamePlaceholder || 'New spell'); setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect'); const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
-        setPh('ItemName', t.itemNamePlaceholder || 'New item'); setPh('ItemPrice', t.itemPricePlaceholder || 'some gp'); setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties'); const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
-        setLabel('label[for="pp"]', t.coinsPP || 'Platinum'); setLabel('label[for="gp"]', t.coinsGP || 'Gold'); setLabel('label[for="sp"]', t.coinsSP || 'Silver'); setLabel('label[for="cp"]', t.coinsCP || 'Copper'); setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
-        renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
-    }
-
     // persistence
-    function encodeCharacter(){ const payload = Object.assign({}, character, { _meta:{ver:1} }); return btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
-    function decodeCharacter(str){ try{ const json = decodeURIComponent(escape(atob(str))); return JSON.parse(json); }catch(e){ return null; } }
+    function encodeCharacter(){
+        const payload = Object.assign({}, character, { _meta:{ver:1} });
+        return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    }
+    function decodeCharacter(str){
+        try{
+            const json = decodeURIComponent(escape(atob(str)));
+            return JSON.parse(json);
+        }catch(e){
+            return null;
+        }
+    }
 
     function saveCharacter(){
         character.info.name  = qs('#charName').value.trim();
         character.info.race  = qs('#charRace').value.trim();
         character.info.class = qs('#charClass').value.trim();
-        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) character.stats[k]=parseInt(el.value)||10; });
+
+        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
+            const el=document.getElementById('stat'+k);
+            if(el) character.stats[k]=parseInt(el.value)||10;
+        });
+
         character.hp.current = parseInt(qs('#currentHP').value)||0;
         character.hp.max     = parseInt(qs('#maxHP').value)||1;
         character.armorClass = parseInt(qs('#armorClass').value)||0;
         character.speed      = parseInt(qs('#speed').value)||0;
         character.notes      = qs('#notes').value || '';
-        character.coins.pp = parseFloat(qs('#pp').value)||0; character.coins.gp = parseFloat(qs('#gp').value)||0; character.coins.sp = parseFloat(qs('#sp').value)||0; character.coins.cp = parseFloat(qs('#cp').value)||0;
+
+        character.coins.pp = parseFloat(qs('#pp').value)||0;
+        character.coins.gp = parseFloat(qs('#gp').value)||0;
+        character.coins.sp = parseFloat(qs('#sp').value)||0;
+        character.coins.cp = parseFloat(qs('#cp').value)||0;
+
         const encoded = encodeCharacter();
-        try{ if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(encoded); }catch(e){}
+        try{
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(encoded);
+            }
+        }catch(e){}
+
         localStorage.setItem('d20_character', encoded);
         alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].savedMsg) || 'Character encoded and copied to clipboard!');
     }
 
     function loadCharacter(){
-        const stored = localStorage.getItem('d20_character'); let data = null; if (stored) data = decodeCharacter(stored);
+        const stored = localStorage.getItem('d20_character');
+        let data = null;
+        if (stored) data = decodeCharacter(stored);
         if (!data){
-            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:'); if (!pasted) return;
-            data = decodeCharacter(pasted); if (!data){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); return; }
+            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:');
+            if (!pasted) return;
+            data = decodeCharacter(pasted);
+            if (!data){
+                alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
+                return;
+            }
         }
         try{
             if (data.info)  character.info  = Object.assign(character.info, data.info);
             if (data.stats) character.stats = Object.assign(character.stats, data.stats);
             if (data.hp)    character.hp    = Object.assign(character.hp, data.hp);
             if (data.coins) character.coins = Object.assign(character.coins, data.coins);
+
             character.skills    = Array.isArray(data.skills)?data.skills:character.skills;
             character.spells    = Array.isArray(data.spells)?data.spells:character.spells;
             character.inventory = Array.isArray(data.inventory)?data.inventory:character.inventory;
+
             character.armorClass = data.armorClass || character.armorClass;
             character.speed      = data.speed || character.speed;
             character.notes      = data.notes || character.notes;
+
             qs('#charName').value = character.info.name || '';
             qs('#charRace').value = character.info.race || '';
             qs('#charClass').value = character.info.class || '';
-            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) el.value = character.stats[k] || 10; });
+
+            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
+                const el=document.getElementById('stat'+k);
+                if(el) el.value = character.stats[k] || 10;
+            });
             updateStatModifiers();
-            qs('#currentHP').value = character.hp.current || 0; qs('#maxHP').value     = character.hp.max || 1; updateHealthBar();
-            qs('#armorClass').value = character.armorClass || 0; qs('#speed').value      = character.speed || 0; qs('#notes').value      = character.notes || '';
-            qs('#pp').value = character.coins.pp || 0; qs('#gp').value = character.coins.gp || 0; qs('#sp').value = character.coins.sp || 0; qs('#cp').value = character.coins.cp || 0;
-            renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+
+            qs('#currentHP').value = character.hp.current || 0;
+            qs('#maxHP').value     = character.hp.max || 1;
+            updateHealthBar();
+
+            qs('#armorClass').value = character.armorClass || 0;
+            qs('#speed').value      = character.speed || 0;
+            qs('#notes').value      = character.notes || '';
+
+            qs('#pp').value = character.coins.pp || 0;
+            qs('#gp').value = character.coins.gp || 0;
+            qs('#sp').value = character.coins.sp || 0;
+            qs('#cp').value = character.coins.cp || 0;
+
+            renderSkills();
+            renderSpells();
+            renderInventory();
+            updateInventoryTotal();
+
             alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadedMsg) || 'Character loaded!');
-        }catch(e){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); }
+        }catch(e){
+            alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
+        }
     }
 
-    // wire up handlers
+    // i18n: setLanguage/updateLanguage implementation (keeps UI translations consistent)
+    function initLanguage(){
+        setLanguage(currentLanguage);
+    }
+
+    function setLanguage(lang){
+        if (!translationsObj[lang]) lang = 'ru';
+        currentLanguage = lang;
+        // updateLanguage will read translationsObj and redraw UI
+        updateLanguage();
+    }
+
+    function updateLanguage(){
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
+        if (!t) return;
+
+        const h1 = qs('h1');
+        if (h1) h1.textContent = t.title || 'D20 character sheet';
+
+        const tabs = qsa('.tab');
+        if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character';
+        if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills';
+        if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells';
+        if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
+
+        const charH2 = qsa('#character .section h2');
+        if (charH2[0]) charH2[0].textContent = t.basicInfo || '';
+        if (charH2[1]) charH2[1].textContent = t.stats || '';
+        if (charH2[2]) charH2[2].textContent = t.health || '';
+        if (charH2[3]) charH2[3].textContent = t.notes || '';
+
+        const skillsH2 = qs('#skills h2');
+        if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
+        const spellsH2 = qs('#spells h2');
+        if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
+        const invH2 = qs('#inventory h2');
+        if (invH2) invH2.textContent = t.inventory || 'Inventory';
+
+        const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
+        const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
+
+        setLabel('label[for="charName"]', t.charName || 'Character Name');
+        setPh('charName', t.charNamePlaceholder || 'Enter name');
+        setLabel('label[for="charRace"]', t.charRace || 'Race');
+        setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
+        setLabel('label[for="charClass"]', t.charClass || 'Class');
+        setPh('charClass', t.charClassPlaceholder || 'Warrior...');
+
+        const statLabels = qsa('.stat-compact label');
+        if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR';
+        if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX';
+        if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON';
+        if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT';
+        if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS';
+        if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
+
+        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP');
+        setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP');
+        setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class');
+        setLabel('label[for="speed"]', t.speed || 'Speed');
+        setPh('notes', t.notesPlaceholder || 'Notes...');
+
+        const saveBtn = qs('#saveBtn');
+        if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character';
+        const loadBtn = qs('#loadBtn');
+        if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
+
+        setPh('newSkillName', t.skillNamePlaceholder || 'New skill');
+        setPh('newSkillBonus', t.skillBonusPlaceholder || '+0');
+        const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
+
+        setPh('newSpellName', t.spellNamePlaceholder || 'New spell');
+        setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect');
+        const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
+
+        setPh('ItemName', t.itemNamePlaceholder || 'New item');
+        setPh('ItemPrice', t.itemPricePlaceholder || 'some gp');
+        setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties');
+        const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
+
+        setLabel('label[for="pp"]', t.coinsPP || 'Platinum');
+        setLabel('label[for="gp"]', t.coinsGP || 'Gold');
+        setLabel('label[for="sp"]', t.coinsSP || 'Silver');
+        setLabel('label[for="cp"]', t.coinsCP || 'Copper');
+        setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
+
+        renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+    }
+
+    // wiring
     function wireUp(){
         qsa('.stat-value').forEach(inp=> inp.addEventListener('input', updateStatModifiers));
-        const curHP = qs('#currentHP'); if (curHP) curHP.addEventListener('input', updateHealthBar);
-        const maxHP = qs('#maxHP'); if (maxHP) maxHP.addEventListener('input', updateHealthBar);
-        const newSkillName = qs('#newSkillName'); if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
-        const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
-        const newSpellName = qs('#newSpellName'); if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
-        const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.addEventListener('click', addSpell);
-        const itemName = qs('#ItemName'); if (itemName) itemName.addEventListener('input', onNewItemNameInput);
-        const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.addEventListener('click', addItem);
-        ['pp','gp','sp','cp'].forEach(id=>{ const el=qs('#'+id); if(el) el.addEventListener('input', updateInventoryTotal); });
-        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
-        const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
-        updateStatModifiers(); updateHealthBar(); renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+        qs('#currentHP').addEventListener('input', updateHealthBar);
+        qs('#maxHP').addEventListener('input', updateHealthBar);
+
+        const newSkillName = qs('#newSkillName');
+        if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
+        const addSkillBtn = qs('#addSkillBtn');
+        if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
+
+        const newSpellName = qs('#newSpellName');
+        if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
+        const addSpellBtn = qs('#addSpellBtn');
+        if (addSpellBtn) addSpellBtn.addEventListener('click', addSpell);
+
+        const itemName = qs('#ItemName');
+        if (itemName) itemName.addEventListener('input', onNewItemNameInput);
+        const addItemBtn = qs('#addItemBtn');
+        if (addItemBtn) addItemBtn.addEventListener('click', addItem);
+
+        ['pp','gp','sp','cp'].forEach(id=>{
+            const el=qs('#'+id);
+            if(el) el.addEventListener('input', updateInventoryTotal);
+        });
+
+        const saveBtn = qs('#saveBtn');
+        if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
+        const loadBtn = qs('#loadBtn');
+        if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
+
+        updateStatModifiers();
+        updateHealthBar();
+        renderSkills();
+        renderSpells();
+        renderInventory();
+        updateInventoryTotal();
     }
 
-    initTabs(); initLanguage(); wireUp(); updateLanguage(); applyEditMode();
+    initTabs();
+    initLanguage();
+    wireUp();
+    updateLanguage();
 
-    // ---------- Unified toggles: tooltips, lens, center toast ----------
-    function showCenterToast(text, ms = 1000) {
-        const el = document.createElement('div'); el.className = 'center-toast'; el.textContent = text; document.body.appendChild(el);
-        void el.offsetWidth; el.classList.add('show');
-        setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>{ if (el && el.parentNode) el.parentNode.removeChild(el); },300); }, ms);
+    // ensure edit mode initial state (HTML starts without readonly)
+    // ---------------- Unified toggle & lang-scroll script ----------------
+
+    // small helper t for translations
+    function _t(key, fallback){
+      try {
+        if (typeof currentLanguage !== 'undefined' && translations && translations[currentLanguage] && translations[currentLanguage][key]) {
+          return translations[currentLanguage][key];
+        }
+        if (translations && translations['ru'] && translations['ru'][key]) return translations['ru'][key];
+      } catch(e){}
+      return fallback;
     }
-    function createInlineTooltip(container, text) {
-        let tip = container.querySelector('.inline-tooltip');
-        if (!tip) { tip = document.createElement('div'); tip.className = 'inline-tooltip'; container.appendChild(tip); }
-        tip.textContent = text; return tip;
-    }
-    function moveLensTo(toggleRoot, targetEl) {
-        const lens = toggleRoot.querySelector('.lens'); if (!lens || !targetEl) return;
-        const rootRect = toggleRoot.getBoundingClientRect(); const targetRect = targetEl.getBoundingClientRect();
-        const centerX = (targetRect.left + targetRect.right) / 2 - rootRect.left; const centerY = (targetRect.top + targetRect.bottom) / 2 - rootRect.top;
-        lens.style.left = (centerX - lens.offsetWidth / 2) + 'px'; lens.style.top  = (centerY - lens.offsetHeight / 2) + 'px';
+
+    function showCenterToast(text, ms = 1000){
+      const el = document.createElement('div');
+      el.className = 'center-toast';
+      el.textContent = text;
+      document.body.appendChild(el);
+      requestAnimationFrame(()=> el.classList.add('show'));
+      setTimeout(()=> { el.classList.remove('show'); setTimeout(()=> el.remove(), 240); }, ms);
     }
 
-    // expose API
-    window.d20 = { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem };
-
-    // autosize notes
-    const notes = document.getElementById('notes'); if (notes){ notes.style.overflow = 'hidden'; notes.style.resize = 'none'; const autoNotes = ()=> autosizeDescription(notes); notes.addEventListener('input', autoNotes); setTimeout(autoNotes, 0); }
-
-})(); 
-
-</script>
-<script>
-(function(){
-  const qs = s => document.querySelector(s);
-  const qsa = s => Array.from(document.querySelectorAll(s));
-
-  function showCenterToast(text, ms = 1000) {
-    const el = document.createElement('div');
-    el.className = 'center-toast';
-    el.textContent = text;
-    document.body.appendChild(el);
-    requestAnimationFrame(()=> el.classList.add('show'));
-    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=> el.remove(), 220); }, ms);
-  }
-
-  function createInlineTooltip(root, text) {
-    let tip = root.querySelector('.inline-tooltip');
-    if (!tip) {
-      tip = document.createElement('div');
-      tip.className = 'inline-tooltip';
-      root.appendChild(tip);
-    }
-    tip.textContent = text;
-    return tip;
-  }
-
-  function moveLensTo(root, target) {
-    const lens = root.querySelector('.lens');
-    if (!lens || !target) return;
-    const rootRect = root.getBoundingClientRect();
-    const tRect = target.getBoundingClientRect();
-    const cx = (tRect.left + tRect.right) / 2 - rootRect.left;
-    const cy = (tRect.top + tRect.bottom) / 2 - rootRect.top;
-    lens.style.left = (cx - lens.offsetWidth / 2) + 'px';
-    lens.style.top  = (cy - lens.offsetHeight / 2) + 'px';
-  }
-
-  function updateAddFormsVisibility(isRead) {
-    const addIds = ['#skillsAdd', '#spellsAdd', '#itemsAdd'];
-    addIds.forEach(id => {
-      const el = qs(id);
-      if (!el) return;
-      if (isRead) {
-        el.dataset._display = el.style.display || '';
-        el.style.display = 'none';
-        el.setAttribute('aria-hidden', 'true');
-      } else {
-        const prev = el.dataset._display || '';
-        el.style.display = prev || 'block';
-        el.removeAttribute('aria-hidden');
+    function createInlineTooltip(root, text){
+      let tip = root.querySelector('.inline-tooltip');
+      if (!tip){
+        tip = document.createElement('div');
+        tip.className = 'inline-tooltip';
+        root.appendChild(tip);
       }
-    });
-  }
-
-  // кнопка редактирования/чтения листа
-  (function setupMode(){
-    const root = qs('#modeToggle');
-    if (!root) return;
-    const circles = Array.from(root.querySelectorAll('.circle'));
-    // visual: empty circles
-    circles.forEach(c => { c.textContent = ''; });
-
-    function setMode(mode, announce = true) {
-      root.dataset.state = mode;
-      circles.forEach(c => {
-        const m = c.dataset.mode;
-        if (m === mode) { c.classList.add('active'); c.classList.remove('inactive'); }
-        else { c.classList.remove('active'); c.classList.add('inactive'); }
-      });
-      const active = root.querySelector('.circle.active') || circles[0];
-      moveLensTo(root, active);
-
-      const isRead = mode === 'read';
-      if (isRead) document.documentElement.classList.add('readonly');
-      else document.documentElement.classList.remove('readonly');
-
-      updateAddFormsVisibility(isRead);
-
-      if (announce) showCenterToast(isRead ? 'Режим чтения' : 'Режим редактирования', 1000);
+      tip.textContent = text;
+      return tip;
     }
 
-    setMode(root.dataset.state === 'read' ? 'read' : 'edit', false);
+    function moveLensTo(root, target){
+      const lens = root.querySelector('.lens');
+      if (!lens || !target) return;
+      const r = root.getBoundingClientRect();
+      const t = target.getBoundingClientRect();
+      const cx = (t.left + t.right)/2 - r.left;
+      const cy = (t.top + t.bottom)/2 - r.top;
+      lens.style.left = (cx - lens.offsetWidth/2) + 'px';
+      lens.style.top  = (cy - lens.offsetHeight/2) + 'px';
+    }
 
-    root.addEventListener('click', ()=>{
-      const newState = (root.dataset.state === 'read') ? 'edit' : 'read';
-      setMode(newState, true);
-    });
-
-    // tooltip on hover for the control (shows current state)
-    root.addEventListener('mouseenter', ()=> createInlineTooltip(root, root.dataset.state === 'read' ? 'Режим чтения' : 'Режим редактирования'));
-    root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
-
-    root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
-    window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
-    requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
-  })();
-
-  // кнопка переключения языков
-  (function setupLang(){
-    const root = qs('#langToggle');
-    if (!root) return;
-    const circles = Array.from(root.querySelectorAll('.circle'));
-    if (circles.length < 4) return; // expect 4
-
-    // normalize data-lang if missing
-    circles.forEach(c => {
-      if (!c.dataset.lang) {
-        const txt = (c.textContent || '').trim().toLowerCase();
-        if (txt.startsWith('ru')) c.dataset.lang = 'ru';
-        else if (txt.startsWith('en')) c.dataset.lang = 'en';
-        else if (txt.startsWith('es')) c.dataset.lang = 'es';
-        else if (txt.startsWith('fr')) c.dataset.lang = 'fr';
-      }
-    });
-
-    const order = circles.map(c => c.dataset.lang).filter(Boolean);
-    if (!order.length) return;
-    let selected = root.dataset.selected || order[0];
-
-    function setLang(lang, showToast = true) {
-      selected = lang;
-      root.dataset.selected = lang;
-      circles.forEach(c => {
-        if (c.dataset.lang === lang) { c.classList.add('active'); c.classList.remove('inactive'); }
-        else { c.classList.remove('active'); c.classList.add('inactive'); }
+    function updateAddFormsVisibility(isRead) {
+      const addIds = ['#skillsAdd', '#spellsAdd', '#itemsAdd'];
+      addIds.forEach(id => {
+        const el = qs(id);
+        if (!el) return;
+        if (isRead){
+          el.dataset._display = el.style.display || '';
+          el.style.display = 'none';
+          el.setAttribute('aria-hidden','true');
+        } else {
+          const prev = el.dataset._display || '';
+          el.style.display = prev || 'block';
+          el.removeAttribute('aria-hidden');
+        }
       });
-      moveLensTo(root, root.querySelector('.circle.active') || circles[0]);
+    }
 
-      // call existing i18n functions if available
-      if (typeof setLanguage === 'function') {
-        try { setLanguage(lang); } catch(e) {}
-      } else if (window.d20 && typeof window.d20.setLanguage === 'function') {
-        try { window.d20.setLanguage(lang); } catch(e) {}
-      } else {
-        try { window.currentLanguage = lang; if (typeof updateLanguage === 'function') updateLanguage(); } catch(e) {}
+    // setup mode toggle
+    (function setupMode(){
+      const root = qs('#modeToggle');
+      if (!root) return;
+      const circles = Array.from(root.querySelectorAll('.circle'));
+      circles.forEach(c => { c.textContent = ''; });
+
+      function setMode(mode, announce = true){
+        root.dataset.state = mode;
+        circles.forEach(c => {
+          const m = c.dataset.mode;
+          if (m === mode) { c.classList.add('active'); c.classList.remove('inactive'); }
+          else { c.classList.remove('active'); c.classList.add('inactive'); }
+        });
+        const active = root.querySelector('.circle.active') || circles[0];
+        moveLensTo(root, active);
+
+        const isRead = mode === 'read';
+        if (isRead) document.documentElement.classList.add('readonly');
+        else document.documentElement.classList.remove('readonly');
+
+        updateAddFormsVisibility(isRead);
+
+        if (announce) showCenterToast(isRead ? _t('toastModeRead','Режим чтения') : _t('toastModeEdit','Режим редактирования'), 1000);
       }
 
-      if (showToast) showCenterToast('Язык: ' + lang.toUpperCase(), 900);
+      setMode(root.dataset.state === 'read' ? 'read' : 'edit', false);
+
+      root.addEventListener('click', ()=>{
+        const newState = (root.dataset.state === 'read') ? 'edit' : 'read';
+        setMode(newState, true);
+      });
+
+      root.addEventListener('mouseenter', ()=> createInlineTooltip(root, root.dataset.state === 'read' ? _t('modeReadLabel','Режим чтения') : _t('modeEditLabel','Режим редактирования')));
+      root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
+
+      root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
+      window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+      requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+    })();
+
+    // setup language scroll toggle
+    (function setupLangScroll(){
+      const root = qs('#langScrollToggle');
+      if (!root) return;
+
+      const posEls = {
+        1: { circle: document.querySelector('.lang-circle[data-pos="1"]'), text: document.querySelector('.lang-text[data-pos="1"]') },
+        2: { circle: document.querySelector('.lang-circle[data-pos="2"]'), text: document.querySelector('.lang-text[data-pos="2"]') },
+        3: { circle: document.querySelector('.lang-circle[data-pos="3"]'), text: document.querySelector('.lang-text[data-pos="3"]') },
+        4: { circle: document.querySelector('.lang-circle[data-pos="4"]'), text: document.querySelector('.lang-text[data-pos="4"]') }
+      };
+      if (!posEls[1].circle) return;
+
+      let order = ['ru','en','fr','es'];
+      try {
+        if (typeof currentLanguage !== 'undefined') {
+          const idx = order.indexOf(currentLanguage);
+          if (idx !== -1) {
+            while (order[0] !== currentLanguage) order = [ order[3], order[0], order[1], order[2] ];
+          }
+        } else if (root.dataset.selected) {
+          const idx = order.indexOf(root.dataset.selected);
+          if (idx !== -1) { while(order[0] !== root.dataset.selected) order = [ order[3], order[0], order[1], order[2] ]; }
+        }
+      } catch(e){}
+
+      const codeLabel = { ru:'RU', en:'EN', fr:'FR', es:'ES' };
+
+      function renderPositions(){
+        for (let i=1;i<=4;i++){
+          const lang = order[i-1];
+          const el = posEls[i];
+          if (!el) continue;
+          el.text.textContent = codeLabel[lang] || lang.toUpperCase();
+          if (i === 1){
+            el.circle.classList.add('active'); el.circle.classList.remove('inactive');
+            el.text.classList.add('active'); el.text.classList.remove('inactive');
+          } else {
+            el.circle.classList.remove('active'); el.circle.classList.add('inactive');
+            el.text.classList.remove('active'); el.text.classList.add('inactive');
+          }
+        }
+        root.setAttribute('title', _t('langSelectedPrefix','Выбран язык: ') + (order[0] || '').toUpperCase());
+        root.dataset.selected = order[0];
+      }
+
+      function rotateOnce(){
+        for (let i=1;i<=4;i++) posEls[i].text.classList.add('lang-shift-out');
+
+        setTimeout(()=> {
+          order = [ order[3], order[0], order[1], order[2] ];
+          renderPositions();
+          for (let i=1;i<=4;i++){
+            const t = posEls[i].text;
+            t.classList.remove('lang-shift-out'); t.classList.add('lang-shift-in');
+          }
+          setTimeout(()=> { for (let i=1;i<=4;i++) posEls[i].text.classList.remove('lang-shift-in'); }, 260);
+
+          const newLang = order[0];
+          if (typeof setLanguage === 'function') {
+            try { setLanguage(newLang); } catch(e){}
+          } else if (window.d20 && typeof window.d20.setLanguage === 'function') {
+            try { window.d20.setLanguage(newLang); } catch(e){}
+          } else if (typeof updateLanguage === 'function') {
+            try { window.currentLanguage = newLang; updateLanguage(); } catch(e){}
+          } else {
+            try { window.currentLanguage = newLang; } catch(e){}
+          }
+
+          const prefix = _t('langToastPrefix','Язык: ');
+          showCenterToast(prefix + (newLang||'').toUpperCase(), 900);
+        }, 180);
+      }
+
+      renderPositions();
+
+      root.addEventListener('click', (ev)=> { ev.preventDefault(); rotateOnce(); });
+      root.addEventListener('keydown', (ev)=> { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); rotateOnce(); } });
+
+      root.addEventListener('mouseenter', ()=> createInlineTooltip(root, _t('langSelectedPrefix','Выбран язык: ') + (root.dataset.selected||'').toUpperCase()));
+      root.addEventListener('mouseleave', ()=> { const tt = root.querySelector('.inline-tooltip'); if (tt) tt.remove(); });
+
+      window.langScrollSet = function(langCode){
+        const idx = order.indexOf(langCode);
+        if (idx === -1) return;
+        while (order[0] !== langCode) order = [ order[3], order[0], order[1], order[2] ];
+        renderPositions();
+      };
+      window._langScrollState = { getOrder: () => order.slice() };
+    })();
+
+    // make notes autosize
+    const notes = document.getElementById('notes');
+    if (notes){
+        notes.style.overflow = 'hidden';
+        notes.style.resize   = 'none';
+        const autoNotes = ()=> autosizeDescription(notes);
+        notes.addEventListener('input', autoNotes);
+        setTimeout(autoNotes, 0);
     }
 
-    // remove per-circle click handlers: only root click cycles languages
-    circles.forEach(c=>{
-      // keep visible label RU/EN/ES/FR
-      c.style.cursor = 'default';
-      c.addEventListener('mouseenter', ()=> {
-        // tooltip shows currently selected language (not per-circle selection)
-        // but we keep helpful hover text referencing this circle for clarity
-        const current = root.dataset.selected || selected;
-        createInlineTooltip(root, 'Выбран язык: ' + (current || '').toUpperCase());
-      });
-      c.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
-    });
-
-    // root click cycles only
-    root.addEventListener('click', () => {
-      const idx = order.indexOf(selected);
-      const next = order[(idx + 1) % order.length];
-      setLang(next, true);
-    });
-
-    // root hover shows selected language
-    root.addEventListener('mouseenter', ()=> {
-      const cur = root.dataset.selected || selected;
-      createInlineTooltip(root, 'Выбран язык: ' + (cur || '').toUpperCase());
-    });
-    root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
-
-    root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
-
-    setLang(selected, false);
-    window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
-    requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
-  })();
-
+    // expose API if needed
+    window.d20 = Object.assign(window.d20 || {}, { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem });
 })();
-</script>
+    </script>
 </body>
 </html>
-</DOCUMENT>
