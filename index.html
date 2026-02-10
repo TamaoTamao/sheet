@@ -91,6 +91,22 @@
           pointer-events: auto;
         }
 
+        /* Ensure mode-toggle circles stay perfectly round and not resized by text/padding */
+        .mode-toggle .circle {
+          width: 14px !important;
+          height: 14px !important;
+          min-width: 14px !important;
+          min-height: 14px !important;
+          padding: 0 !important;
+          line-height: 14px !important;
+          overflow: hidden !important;
+          text-indent: 0 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-sizing: border-box !important;
+        }
+
         /* common active/inactive */
         .toggle-core .circle.active {
           transform: scale(1);
@@ -105,9 +121,9 @@
           color: var(--color-parchment);
         }
 
-        /* mode-specific colors (only for mode toggle) */
-        .mode-toggle .circle[data-mode="read"].active { background: var(--color-hp-green); color: var(--color-parchment); }
-        .mode-toggle .circle[data-mode="edit"].active { background: var(--color-accent-red); color: var(--color-parchment); }
+        /* mode-specific colors: read = red, edit = green (user request) */
+        .mode-toggle .circle[data-mode="read"].active { background: var(--color-accent-red); color: var(--color-parchment); }
+        .mode-toggle .circle[data-mode="edit"].active { background: var(--color-hp-green); color: var(--color-parchment); }
         /* mode-toggle inactive border (black) */
         .mode-toggle .circle.inactive { border: 1px solid rgba(0,0,0,0.9); box-shadow: 0 1px 2px rgba(44,24,16,0.18), inset 0 0 0 1px rgba(0,0,0,0.03); }
 
@@ -169,9 +185,9 @@
         }
         .center-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* top-right placement: fixed */
+        /* top-right placement: anchor to top of document (not fixed) so it scrolls away */
         .top-right-controls {
-          position: fixed;
+          position: absolute; /* change from fixed -> absolute so it scrolls off the page */
           top: 14px;
           right: 14px;
           display: flex;
@@ -179,6 +195,39 @@
           gap: 10px;
           z-index: 9999;
           pointer-events: auto;
+        }
+
+        /* health bar thumb: rectangular grabber */
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--color-parchment-darker);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.4);
+        }
+        .progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            transition: width 0.3s, background-color 0.2s ease;
+            border-radius: 4px;
+            z-index: 1;
+        }
+        /* rectangular grabber (hp thumb) */
+        .hp-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(44,24,16,0.25);
+            z-index: 2;
+            transition: left 0.28s ease, background-color 0.2s ease;
         }
 
         /* safety: make room on small screens for controls */
@@ -363,12 +412,13 @@
             box-sizing: border-box;
         }
 
+
         .item-details {
             font-size: 0.85rem;
             color: var(--color-ink-light);
             font-style: italic;
         }
-
+        
         .item-details input,
         .item-details textarea {
             font-family: inherit;
@@ -655,22 +705,6 @@
             font-weight: 600;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: var(--color-parchment-darker);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.4);
-        }
-
-        .progress-fill {
-            height: 100%;
-            transition: width 0.3s, background-color 0.2s ease;
-            border-radius: 4px;
-        }
-
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -694,7 +728,7 @@
 
 <div class="top-right-controls">
   <!-- Scroll / language SVG (встроенный, без внешних ссылок) -->
-  <div class="scroll-container" id="langScrollToggle" role="button" tabindex="0" aria-label="Language toggle" data-selected="ru">
+  <div class="scroll-container lang-scroll" id="langScrollToggle" role="button" tabindex="0" aria-label="Language toggle" data-selected="ru">
     <svg class="scroll-icon" viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="false">
       <defs>
         <mask id="cutout-mask">
@@ -706,9 +740,18 @@
         </mask>
       </defs>
 
-      <!-- Контур свитка -->
-      <path d="M 18 18 Q 5 30 18 42 L 18 98 Q 5 110 18 122 L 82 122 Q 95 110 82 98 L 82 42 Q 95 30 82 18 Z"
-            fill="none" stroke="#000" stroke-width="3"/>
+      <!-- Контур свитка (rotated path as requested) -->
+      <g transform="rotate(3.5 50 70)">
+        <path d="
+            M 15 18
+            C 10 40 26 60 15 70
+            C 10 80 26 100 15 122
+            L 85 122
+            C 90 100 74 80 85 70
+            C 90 60 74 40 85 18
+            Z"
+              fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+      </g>
 
       <rect x="8" y="12" width="84" height="12" fill="#000" rx="2"/>
       <rect x="8" y="116" width="84" height="12" fill="#000" rx="2"/>
@@ -744,10 +787,10 @@
 
       <!-- метки языков (положение совпадает с кружками) -->
       <g font-family="Palatino, Georgia, serif" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-size="8">
-        <text id="langTextPosTop" x="50" y="38">FR</text>
-        <text id="langTextPosCenter" x="50" y="82">RU</text>
-        <text id="langTextPosLeft" x="30" y="105">EN</text>
-        <text id="langTextPosRight" x="70" y="105">ES</text>
+        <text id="langTextPosTop" class="lang-text" x="50" y="38">FR</text>
+        <text id="langTextPosCenter" class="lang-text" x="50" y="82">RU</text>
+        <text id="langTextPosLeft" class="lang-text" x="30" y="105">EN</text>
+        <text id="langTextPosRight" class="lang-text" x="70" y="105">ES</text>
       </g>
     </svg>
   </div>
@@ -756,7 +799,7 @@
   <div class="toggle-core mode-toggle" id="modeToggle" role="button" tabindex="0" aria-label="Mode toggle" data-state="edit">
     <div class="toggle-row" aria-hidden="true">
       <div class="circle" data-mode="read" aria-label="Режим чтения"></div>
-      <div class="circle" data-mode="edit" aria-label="Режим редактиров��ния"></div>
+      <div class="circle" data-mode="edit" aria-label="Режим редактирования"></div>
     </div>
     <div class="lens" aria-hidden="true"></div>
   </div>
@@ -785,7 +828,7 @@
                 <div style="display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px;">
                     <div class="input-group" style="flex: 1;">
                         <label for="charClass">Класс</label>
-                        <input type="text" id="charClass" placeholder="Воин, бард, чародей...">
+                        <input type="text" id="charClass" placeholder="Воин, бар��, чародей...">
                     </div>
                 </div>
             </div>
@@ -847,15 +890,20 @@
                     <input type="number" id="maxHP" value="20" min="1" style="width: 80px;">
                 </div>
                 <div class="health-bar" style="margin-bottom: 16px;">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="hpBar" style="width: 100%"></div>
+                    <div class="progress-bar" id="hpBarContainer">
+                        <div class="progress-fill" id="hpBar" style="width:100%"></div>
+                        <div class="hp-thumb" id="hpThumb" role="presentation" aria-hidden="true"></div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <label for="armorClass" style="white-space: nowrap;">Класс доспеха</label>
-                    <input type="number" id="armorClass" value="10" min="0" style="width: 80px;">
-                    <label for="speed" style="white-space: nowrap;">Скорость</label>
-                    <input type="number" id="speed" value="30" min="0" style="width: 80px;">
+                <div class="health-display" style="align-items:center;">
+                    <div>
+                        <label for="armorClass" style="white-space: nowrap;">Класс доспеха</label>
+                        <input type="number" id="armorClass" value="10" min="0" style="width: 80px;">
+                    </div>
+                    <div>
+                        <label for="speed" style="white-space: nowrap;">Скорость</label>
+                        <input type="number" id="speed" value="30" min="0" style="width: 80px;">
+                    </div>
                 </div>
             </div>
 
@@ -877,6 +925,7 @@
                 <div id="skillsAdd" style="margin-top:12px;">
                     <input type="text" id="newSkillName" placeholder="Добавить навык">
                     <div id="skillsExtraFields" style="display:none; margin-top:8px;">
+                        <!-- bonus must be text but only digits -->
                         <input type="text" id="newSkillBonus" placeholder="бонус +0">
                         <button class="btn btn-small" id="addSkillBtn">Добавить</button>
                     </div>
@@ -893,10 +942,11 @@
                     <div id="spellsExtraFields" style="display:none; margin-top:8px;">
                         <div class="form-row">
                             <div class="inline-input">
-                                <input type="number" id="newSpellLevel" placeholder="Уровень заклинания" min="0" max="9">
+                                <!-- spell level and slots must be text but only digits -->
+                                <input type="text" id="newSpellLevel" placeholder="Уровень заклинания" min="0" max="9">
                             </div>
                             <div class="inline-input">
-                                <input type="number" id="newSpellSlots" placeholder="Доступные слоты" min="0">
+                                <input type="text" id="newSpellSlots" placeholder="Доступные слоты" min="0">
                             </div>
                         </div>
                         <div class="input-group">
@@ -917,9 +967,11 @@
                     <div id="itemsExtraFields" style="display:none; margin-top: 8px;">
                         <div class="form-row">
                             <div class="inline-input">
-                                <input type="number" id="ItemQuantity" placeholder="Количество" min="0">
+                                <!-- quantity must be text digits-only -->
+                                <input type="text" id="ItemQuantity" placeholder="Количество" min="0">
                             </div>
                             <div class="inline-input">
+                                <!-- price must be text digits-only -->
                                 <input type="text" id="ItemPrice" placeholder="Рыночная стоимость" min="0">
                             </div>
                         </div>
@@ -932,19 +984,20 @@
                 <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--color-parchment-darker);">
                     <div class="compact-input">
                         <label for="pp">Платиновые</label>
-                        <input type="number" id="pp" value="0" min="0">
+                        <!-- coins must be text digits-only -->
+                        <input type="text" id="pp" value="0" min="0">
                     </div>
                     <div class="compact-input">
                         <label for="gp">Золотые</label>
-                        <input type="number" id="gp" value="0" min="0">
+                        <input type="text" id="gp" value="0" min="0">
                     </div>
                     <div class="compact-input">
                         <label for="sp">Серебряные</label>
-                        <input type="number" id="sp" value="0" min="0">
+                        <input type="text" id="sp" value="0" min="0">
                     </div>
                     <div class="compact-input">
                         <label for="cp">Медные</label>
-                        <input type="number" id="cp" value="0" min="0">
+                        <input type="text" id="cp" value="0" min="0">
                     </div>
                     <div class="compact-input">
                         <label for="inventoryTotal">Общая стоимость инвентаря</label>
@@ -1254,14 +1307,14 @@ const translations = {
     const repoProvidedTranslations = window.translations || {};
     const qs  = (sel)=>document.querySelector(sel);
     const qsa = (sel)=>Array.from(document.querySelectorAll(sel));
-
-    // measurement element for autogrow
+    
+    // скрытый измеритель ширины текста
     const descMeasure = document.createElement('span');
-        descMeasure.style.visibility = 'hidden';
-        descMeasure.style.whiteSpace = 'pre';
-        descMeasure.style.position = 'absolute';
-        descMeasure.style.left = '-9999px';
-        document.body.appendChild(descMeasure);
+    descMeasure.style.visibility = 'hidden';
+    descMeasure.style.whiteSpace = 'pre';
+    descMeasure.style.position = 'absolute';
+    descMeasure.style.left = '-9999px';
+    document.body.appendChild(descMeasure);
 
     function autosizeDescription(textarea){
         const style = getComputedStyle(textarea);
@@ -1309,6 +1362,7 @@ const translations = {
         if (el) el.classList.add('active');
     }
 
+    // Stats
     function calcMod(score){
         const s = parseInt(score)||0;
         const m = Math.floor((s-10)/2);
@@ -1323,10 +1377,8 @@ const translations = {
         });
     }
 
-    // HP bar
-    function lerp(a, b, t){
-        return a + (b - a) * t;
-    }
+    // HP bar color
+    function lerp(a, b, t){ return a + (b - a) * t; }
     function lerpColor(c1, c2, t){
         const r = Math.round(lerp(c1[0], c2[0], t));
         const g = Math.round(lerp(c1[1], c2[1], t));
@@ -1350,16 +1402,51 @@ const translations = {
         const cur = parseInt(qs('#currentHP').value) || 0;
         const max = parseInt(qs('#maxHP').value) || 1;
         const bar = qs('#hpBar');
-        if (!bar) return;
+        const container = qs('#hpBarContainer');
+        const thumb = qs('#hpThumb');
+        if (!bar || !container || !thumb) return;
         const ratio = Math.max(0, Math.min(1, cur / max));
         bar.style.width = (ratio * 100) + '%';
-        bar.style.backgroundColor = getHpColorByPercent(ratio);
+        const color = getHpColorByPercent(ratio);
+        bar.style.backgroundColor = color;
+        // position thumb centered on the filled edge
+        const contRect = container.getBoundingClientRect();
+        const thumbW = Math.max(12, Math.min(40, Math.round(contRect.width * 0.06))); // responsive thumb width
+        thumb.style.width = thumbW + 'px';
+        const left = Math.round(ratio * contRect.width - thumbW / 2);
+        const clampedLeft = Math.max(0, Math.min(contRect.width - thumbW, left));
+        thumb.style.left = clampedLeft + 'px';
+        thumb.style.backgroundColor = color;
     }
 
-    // Skills / Spells / Inventory renderers (same as before)
+    // Utility: restrict input to digits only (natural numbers)
+    function restrictToDigitsInput(el){
+      if (!el) return;
+      el.addEventListener('input', ()=> {
+        const before = el.value;
+        // remove any non-digit characters
+        const cleaned = (before || '').replace(/\D+/g, '');
+        if (before !== cleaned) {
+          const pos = (el.selectionStart || 0) - (before.length - cleaned.length);
+          el.value = cleaned;
+          try { el.setSelectionRange(pos, pos); } catch(e){}
+        }
+      });
+      // prevent paste of non-digits
+      el.addEventListener('paste', (ev)=>{
+        ev.preventDefault();
+        const text = (ev.clipboardData || window.clipboardData).getData('text') || '';
+        const cleaned = text.replace(/\D+/g,'');
+        const start = el.selectionStart || 0;
+        const end = el.selectionEnd || 0;
+        const newVal = el.value.slice(0,start) + cleaned + el.value.slice(end);
+        el.value = newVal.replace(/\D+/g,'');
+      });
+    }
+
+    // Render lists (skills / spells / inventory)
     function renderSkills(){
-        const container = qs('#skillsList');
-        container.innerHTML = '';
+        const container = qs('#skillsList'); container.innerHTML = '';
         if (!character.skills.length){
             const empty = document.createElement('div');
             empty.className = 'empty-state';
@@ -1368,11 +1455,12 @@ const translations = {
             return;
         }
         character.skills.forEach((s, idx)=>{
-            const item = document.createElement('div');
-            item.className = 'item';
+            const item = document.createElement('div'); item.className = 'item';
             const info = document.createElement('div'); info.className = 'item-info';
             const nameSpan = document.createElement('span'); nameSpan.textContent = s.name; nameSpan.className = 'item-name';
             const bonusInput = document.createElement('input'); bonusInput.type = 'text'; bonusInput.value = s.bonus || ''; bonusInput.className = 'item-details';
+            // restrict to digits only
+            restrictToDigitsInput(bonusInput);
             bonusInput.addEventListener('input', ()=>{ character.skills[idx].bonus = bonusInput.value; });
             info.appendChild(nameSpan); info.appendChild(bonusInput);
             const actions = document.createElement('div'); actions.className = 'item-actions';
@@ -1402,10 +1490,13 @@ const translations = {
             const metaLine = document.createElement('div');
             const lvlSpan = document.createElement('span'); lvlSpan.textContent = levelLabelText + ': ';
             const lvlInput = document.createElement('input'); lvlInput.type = 'text'; lvlInput.value = (s.level ?? 0).toString(); lvlInput.className = 'item-details'; lvlInput.style.width = '60px';
+            // restrict to digits
+            restrictToDigitsInput(lvlInput);
             lvlInput.addEventListener('input', ()=>{ const raw = lvlInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].level = Number.isNaN(parsed) ? 0 : parsed; });
             const sepSpan = document.createElement('span'); sepSpan.textContent = ' · ';
             const slotsSpan = document.createElement('span'); slotsSpan.textContent = slotsLabelText + ': ';
             const slotsInput = document.createElement('input'); slotsInput.type = 'text'; slotsInput.value = (s.slots ?? 0).toString(); slotsInput.className = 'item-details'; slotsInput.style.width = '60px';
+            restrictToDigitsInput(slotsInput);
             slotsInput.addEventListener('input', ()=>{ const raw = slotsInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].slots = Number.isNaN(parsed) ? 0 : parsed; });
             metaLine.appendChild(lvlSpan); metaLine.appendChild(lvlInput); metaLine.appendChild(sepSpan); metaLine.appendChild(slotsSpan); metaLine.appendChild(slotsInput);
             const descArea = document.createElement('textarea'); descArea.value = s.desc || ''; descArea.rows  = 1; descArea.style.overflow = 'hidden'; descArea.style.resize   = 'none';
@@ -1424,14 +1515,11 @@ const translations = {
     function addSpell(){ const name=qs('#newSpellName').value.trim(); if(!name) return; const level=parseInt(qs('#newSpellLevel').value)||0; const slots=parseInt(qs('#newSpellSlots').value)||0; const desc=qs('#newSpellDesc').value.trim(); character.spells.push({name,level,slots,desc}); qs('#newSpellName').value=''; qs('#newSpellDesc').value=''; qs('#newSpellLevel').value=''; qs('#newSpellSlots').value=''; qs('#spellsExtraFields').style.display='none'; renderSpells(); }
 
     function renderInventory(){
-        const container = qs('#inventoryList');
-        container.innerHTML = '';
+        const container = qs('#inventoryList'); container.innerHTML = '';
         if (!character.inventory.length){
-            const empty = document.createElement('div');
-            empty.className = 'empty-state';
+            const empty = document.createElement('div'); empty.className = 'empty-state';
             empty.textContent = (translationsObj[currentLanguage] && translationsObj[currentLanguage].noItems) || 'Inventory is empty';
-            container.appendChild(empty);
-            return;
+            container.appendChild(empty); return;
         }
         const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
         const qtyLabelText   = t.itemQuantity || 'Quantity';
@@ -1444,6 +1532,8 @@ const translations = {
             const qtyLine = document.createElement('div');
             const qtyLabelSpan = document.createElement('span'); qtyLabelSpan.textContent = qtyLabelText + ': ';
             const qtyInput = document.createElement('input'); qtyInput.type  = 'text'; qtyInput.value = (it.quantity ?? 1).toString(); qtyInput.className = 'item-details'; qtyInput.style.width = '70px';
+            // restrict qty to digits
+            restrictToDigitsInput(qtyInput);
             qtyInput.addEventListener('input', ()=>{ const raw = qtyInput.value.trim(); const parsed = parseInt(raw, 10); character.inventory[idx].quantity = Number.isNaN(parsed) ? 1 : parsed; updateInventoryTotal(); });
             qtyLine.appendChild(qtyLabelSpan); qtyLine.appendChild(qtyInput);
             const priceLine = document.createElement('div'); priceLine.textContent = priceLabelText + ': ' + (it.price || '');
@@ -1462,18 +1552,13 @@ const translations = {
     function onNewItemNameInput(){ const name=qs('#ItemName').value.trim(); qs('#itemsExtraFields').style.display = name ? 'block':'none'; }
     function addItem(){ const name=qs('#ItemName').value.trim(); if(!name) return; const qty=parseInt(qs('#ItemQuantity').value)||1; const price=qs('#ItemPrice').value.trim(); const desc=qs('#ItemDesc').value.trim(); character.inventory.push({name,quantity:qty,price,desc}); qs('#ItemName').value=''; qs('#ItemQuantity').value=''; qs('#ItemPrice').value=''; qs('#ItemDesc').value=''; qs('#itemsExtraFields').style.display='none'; renderInventory(); updateInventoryTotal(); }
 
-    function hasStem(word, stem, endings){
-        if (!word.includes(stem)) return false;
-        return endings.some(end => word.endsWith(end));
-    }
-
+    function hasStem(word, stem, endings){ if (!word.includes(stem)) return false; return endings.some(end => word.endsWith(end)); }
     function parsePriceToGP(priceStr){
         if (!priceStr) return 0;
         const s = String(priceStr).toLowerCase();
         const numMatch = s.match(/([-+]?\d*\.?\d+)/);
         if (!numMatch) return 0;
-        const val = parseFloat(numMatch[1]);
-        if (isNaN(val)) return 0;
+        const val = parseFloat(numMatch[1]); if (isNaN(val)) return 0;
         const unitMap = [
             { unit: 'pp', match: str => ['pp','platinum','пм', 'пп'].some(k => str.includes(k)) || hasStem(str, 'платин', ['а','ы']) },
             { unit: 'gp', match: str => ['gp','gold','зм', 'гп'].some(k => str.includes(k)) || hasStem(str, 'золо', ['то','та','тых']) || hasStem(str, 'голд', ['','а','ы']) || hasStem(str, 'руб',  ['','ль','ля','лей']) },
@@ -1490,465 +1575,475 @@ const translations = {
             default:   return val;
         }
     }
-
     function updateInventoryTotal(){
-        const pp=parseFloat(qs('#pp').value)||0;
-        const gp=parseFloat(qs('#gp').value)||0;
-        const sp=parseFloat(qs('#sp').value)||0;
-        const cp=parseFloat(qs('#cp').value)||0;
+        const pp=parseFloat(qs('#pp').value)||0; const gp=parseFloat(qs('#gp').value)||0; const sp=parseFloat(qs('#sp').value)||0; const cp=parseFloat(qs('#cp').value)||0;
         let total = pp*COIN_RATES.pp + gp*COIN_RATES.gp + sp*COIN_RATES.sp + cp*COIN_RATES.cp;
-        character.inventory.forEach(it=>{
-            total += parsePriceToGP(it.price) * (it.quantity||1);
-        });
+        character.inventory.forEach(it=>{ total += parsePriceToGP(it.price) * (it.quantity||1); });
         qs('#inventoryTotal').value = total.toFixed(2) + ' gp';
     }
 
+    // Edit mode
+    let isEditMode = true;
+    function applyEditMode(){ const root = document.documentElement; if (isEditMode) root.classList.remove('readonly'); else root.classList.add('readonly'); }
+
+    // i18n
+    function initLanguage(){ setLanguage(currentLanguage); }
+    function setLanguage(lang){
+        if (!translationsObj[lang]) lang = 'ru';
+        currentLanguage = lang;
+        const toggle = qs('#langScrollToggle'); if (toggle) toggle.dataset.selected = lang;
+        updateLanguage();
+    }
+    function updateLanguage(){
+        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {}; if (!t) return;
+        const h1 = qs('h1'); if (h1) h1.textContent = t.title || 'D20 character sheet';
+        const tabs = qsa('.tab'); if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character'; if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills'; if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells'; if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
+        const charH2 = qsa('#character .section h2'); if (charH2[0]) charH2[0].textContent = t.basicInfo || ''; if (charH2[1]) charH2[1].textContent = t.stats || ''; if (charH2[2]) charH2[2].textContent = t.health || ''; if (charH2[3]) charH2[3].textContent = t.notes || '';
+        const skillsH2 = qs('#skills h2'); if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
+        const spellsH2 = qs('#spells h2'); if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
+        const invH2 = qs('#inventory h2'); if (invH2) invH2.textContent = t.inventory || 'Inventory';
+        const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
+        const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
+        setLabel('label[for="charName"]', t.charName || 'Character Name'); setPh('charName', t.charNamePlaceholder || 'Enter name');
+        setLabel('label[for="charRace"]', t.charRace || 'Race'); setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
+        setLabel('label[for="charClass"]', t.charClass || 'Class'); setPh('charClass', t.charClassPlaceholder || 'Warrior...');
+        const statLabels = qsa('.stat-compact label'); if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR'; if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX'; if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON'; if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT'; if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS'; if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
+        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP'); setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP'); setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class'); setLabel('label[for="speed"]', t.speed || 'Speed'); setPh('notes', t.notesPlaceholder || 'Notes...');
+        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character'; const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
+        setPh('newSkillName', t.skillNamePlaceholder || 'New skill'); setPh('newSkillBonus', t.skillBonusPlaceholder || '+0'); const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
+        setPh('newSpellName', t.spellNamePlaceholder || 'New spell'); setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect'); const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
+        setPh('ItemName', t.itemNamePlaceholder || 'New item'); setPh('ItemPrice', t.itemPricePlaceholder || 'some gp'); setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties'); const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
+        setLabel('label[for="pp"]', t.coinsPP || 'Platinum'); setLabel('label[for="gp"]', t.coinsGP || 'Gold'); setLabel('label[for="sp"]', t.coinsSP || 'Silver'); setLabel('label[for="cp"]', t.coinsCP || 'Copper'); setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
+        renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
+    }
+
     // persistence
-    function encodeCharacter(){
-        const payload = Object.assign({}, character, { _meta:{ver:1} });
-        return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-    }
-    function decodeCharacter(str){
-        try{
-            const json = decodeURIComponent(escape(atob(str)));
-            return JSON.parse(json);
-        }catch(e){
-            return null;
-        }
-    }
+    function encodeCharacter(){ const payload = Object.assign({}, character, { _meta:{ver:1} }); return btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+    function decodeCharacter(str){ try{ const json = decodeURIComponent(escape(atob(str))); return JSON.parse(json); }catch(e){ return null; } }
 
     function saveCharacter(){
         character.info.name  = qs('#charName').value.trim();
         character.info.race  = qs('#charRace').value.trim();
         character.info.class = qs('#charClass').value.trim();
-
-        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
-            const el=document.getElementById('stat'+k);
-            if(el) character.stats[k]=parseInt(el.value)||10;
-        });
-
+        ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) character.stats[k]=parseInt(el.value)||10; });
         character.hp.current = parseInt(qs('#currentHP').value)||0;
         character.hp.max     = parseInt(qs('#maxHP').value)||1;
         character.armorClass = parseInt(qs('#armorClass').value)||0;
         character.speed      = parseInt(qs('#speed').value)||0;
         character.notes      = qs('#notes').value || '';
-
-        character.coins.pp = parseFloat(qs('#pp').value)||0;
-        character.coins.gp = parseFloat(qs('#gp').value)||0;
-        character.coins.sp = parseFloat(qs('#sp').value)||0;
-        character.coins.cp = parseFloat(qs('#cp').value)||0;
-
+        character.coins.pp = parseFloat(qs('#pp').value)||0; character.coins.gp = parseFloat(qs('#gp').value)||0; character.coins.sp = parseFloat(qs('#sp').value)||0; character.coins.cp = parseFloat(qs('#cp').value)||0;
         const encoded = encodeCharacter();
-        try{
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(encoded);
-            }
-        }catch(e){}
-
+        try{ if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(encoded); }catch(e){}
         localStorage.setItem('d20_character', encoded);
         alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].savedMsg) || 'Character encoded and copied to clipboard!');
     }
 
     function loadCharacter(){
-        const stored = localStorage.getItem('d20_character');
-        let data = null;
-        if (stored) data = decodeCharacter(stored);
+        const stored = localStorage.getItem('d20_character'); let data = null; if (stored) data = decodeCharacter(stored);
         if (!data){
-            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:');
-            if (!pasted) return;
-            data = decodeCharacter(pasted);
-            if (!data){
-                alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
-                return;
-            }
+            const pasted = prompt((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadPrompt) || 'Paste encoded character data:'); if (!pasted) return;
+            data = decodeCharacter(pasted); if (!data){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); return; }
         }
         try{
             if (data.info)  character.info  = Object.assign(character.info, data.info);
             if (data.stats) character.stats = Object.assign(character.stats, data.stats);
             if (data.hp)    character.hp    = Object.assign(character.hp, data.hp);
             if (data.coins) character.coins = Object.assign(character.coins, data.coins);
-
             character.skills    = Array.isArray(data.skills)?data.skills:character.skills;
             character.spells    = Array.isArray(data.spells)?data.spells:character.spells;
             character.inventory = Array.isArray(data.inventory)?data.inventory:character.inventory;
-
             character.armorClass = data.armorClass || character.armorClass;
             character.speed      = data.speed || character.speed;
             character.notes      = data.notes || character.notes;
-
             qs('#charName').value = character.info.name || '';
             qs('#charRace').value = character.info.race || '';
             qs('#charClass').value = character.info.class || '';
-
-            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{
-                const el=document.getElementById('stat'+k);
-                if(el) el.value = character.stats[k] || 10;
-            });
+            ['Str','Dex','Con','Int','Wis','Cha'].forEach(k=>{ const el=document.getElementById('stat'+k); if(el) el.value = character.stats[k] || 10; });
             updateStatModifiers();
-
-            qs('#currentHP').value = character.hp.current || 0;
-            qs('#maxHP').value     = character.hp.max || 1;
-            updateHealthBar();
-
-            qs('#armorClass').value = character.armorClass || 0;
-            qs('#speed').value      = character.speed || 0;
-            qs('#notes').value      = character.notes || '';
-
-            qs('#pp').value = character.coins.pp || 0;
-            qs('#gp').value = character.coins.gp || 0;
-            qs('#sp').value = character.coins.sp || 0;
-            qs('#cp').value = character.coins.cp || 0;
-
-            renderSkills();
-            renderSpells();
-            renderInventory();
-            updateInventoryTotal();
-
+            qs('#currentHP').value = character.hp.current || 0; qs('#maxHP').value     = character.hp.max || 1; updateHealthBar();
+            qs('#armorClass').value = character.armorClass || 0; qs('#speed').value      = character.speed || 0; qs('#notes').value      = character.notes || '';
+            qs('#pp').value = character.coins.pp || 0; qs('#gp').value = character.coins.gp || 0; qs('#sp').value = character.coins.sp || 0; qs('#cp').value = character.coins.cp || 0;
+            renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
             alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].loadedMsg) || 'Character loaded!');
-        }catch(e){
-            alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.');
-        }
+        }catch(e){ alert((translationsObj[currentLanguage] && translationsObj[currentLanguage].errorMsg) || 'Decoding error. Check the string.'); }
     }
 
-    // i18n: setLanguage/updateLanguage implementation (keeps UI translations consistent)
-    function initLanguage(){
-        setLanguage(currentLanguage);
-    }
-
-    function setLanguage(lang){
-        if (!translationsObj[lang]) lang = 'ru';
-        currentLanguage = lang;
-        // updateLanguage will read translationsObj and redraw UI
-        updateLanguage();
-    }
-
-    function updateLanguage(){
-        const t = translationsObj[currentLanguage] || translationsObj['ru'] || {};
-        if (!t) return;
-
-        const h1 = qs('h1');
-        if (h1) h1.textContent = t.title || 'D20 character sheet';
-
-        const tabs = qsa('.tab');
-        if (tabs[0]) tabs[0].textContent = t.tabCharacter || 'Character';
-        if (tabs[1]) tabs[1].textContent = t.tabSkills || 'Skills';
-        if (tabs[2]) tabs[2].textContent = t.tabSpells || 'Spells';
-        if (tabs[3]) tabs[3].textContent = t.tabInventory || 'Inventory';
-
-        const charH2 = qsa('#character .section h2');
-        if (charH2[0]) charH2[0].textContent = t.basicInfo || '';
-        if (charH2[1]) charH2[1].textContent = t.stats || '';
-        if (charH2[2]) charH2[2].textContent = t.health || '';
-        if (charH2[3]) charH2[3].textContent = t.notes || '';
-
-        const skillsH2 = qs('#skills h2');
-        if (skillsH2) skillsH2.textContent = t.skills || 'Skills';
-        const spellsH2 = qs('#spells h2');
-        if (spellsH2) spellsH2.textContent = t.spells || 'Spells';
-        const invH2 = qs('#inventory h2');
-        if (invH2) invH2.textContent = t.inventory || 'Inventory';
-
-        const setLabel = (sel, txt)=>{ const el = qs(sel); if (el) el.textContent = txt; };
-        const setPh = (id, txt)=>{ const el = document.getElementById(id); if (el) el.placeholder = txt; };
-
-        setLabel('label[for="charName"]', t.charName || 'Character Name');
-        setPh('charName', t.charNamePlaceholder || 'Enter name');
-        setLabel('label[for="charRace"]', t.charRace || 'Race');
-        setPh('charRace', t.charRacePlaceholder || 'Human, elf...');
-        setLabel('label[for="charClass"]', t.charClass || 'Class');
-        setPh('charClass', t.charClassPlaceholder || 'Warrior...');
-
-        const statLabels = qsa('.stat-compact label');
-        if (statLabels[0]) statLabels[0].textContent = t.statStr || 'STR';
-        if (statLabels[1]) statLabels[1].textContent = t.statDex || 'DEX';
-        if (statLabels[2]) statLabels[2].textContent = t.statCon || 'CON';
-        if (statLabels[3]) statLabels[3].textContent = t.statInt || 'INT';
-        if (statLabels[4]) statLabels[4].textContent = t.statWis || 'WIS';
-        if (statLabels[5]) statLabels[5].textContent = t.statCha || 'CHA';
-
-        setLabel('label[for="currentHP"]', t.currentHP || 'Current HP');
-        setLabel('label[for="maxHP"]', t.maxHP || 'Maximum HP');
-        setLabel('label[for="armorClass"]', t.armorClass || 'Armor Class');
-        setLabel('label[for="speed"]', t.speed || 'Speed');
-        setPh('notes', t.notesPlaceholder || 'Notes...');
-
-        const saveBtn = qs('#saveBtn');
-        if (saveBtn) saveBtn.textContent = t.saveBtn || 'Save Character';
-        const loadBtn = qs('#loadBtn');
-        if (loadBtn) loadBtn.textContent = t.loadBtn || 'Load Character';
-
-        setPh('newSkillName', t.skillNamePlaceholder || 'New skill');
-        setPh('newSkillBonus', t.skillBonusPlaceholder || '+0');
-        const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.textContent = t.addSkill || 'Add Skill';
-
-        setPh('newSpellName', t.spellNamePlaceholder || 'New spell');
-        setPh('newSpellDesc', t.spellDescPlaceholder || 'Spell effect');
-        const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.textContent = t.addSpell || 'Add Spell';
-
-        setPh('ItemName', t.itemNamePlaceholder || 'New item');
-        setPh('ItemPrice', t.itemPricePlaceholder || 'some gp');
-        setPh('ItemDesc', t.itemDescPlaceholder || 'Item properties');
-        const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.textContent = t.addItem || 'Add Item';
-
-        setLabel('label[for="pp"]', t.coinsPP || 'Platinum');
-        setLabel('label[for="gp"]', t.coinsGP || 'Gold');
-        setLabel('label[for="sp"]', t.coinsSP || 'Silver');
-        setLabel('label[for="cp"]', t.coinsCP || 'Copper');
-        setLabel('label[for="inventoryTotal"]', t.totalValue || 'Total Inventory Value');
-
-        renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
-    }
-
-    // wiring
+    // wire up handlers
     function wireUp(){
         qsa('.stat-value').forEach(inp=> inp.addEventListener('input', updateStatModifiers));
-        qs('#currentHP').addEventListener('input', updateHealthBar);
-        qs('#maxHP').addEventListener('input', updateHealthBar);
-
-        const newSkillName = qs('#newSkillName');
-        if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
-        const addSkillBtn = qs('#addSkillBtn');
-        if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
-
-        const newSpellName = qs('#newSpellName');
-        if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
-        const addSpellBtn = qs('#addSpellBtn');
-        if (addSpellBtn) addSpellBtn.addEventListener('click', addSpell);
-
-        const itemName = qs('#ItemName');
-        if (itemName) itemName.addEventListener('input', onNewItemNameInput);
-        const addItemBtn = qs('#addItemBtn');
-        if (addItemBtn) addItemBtn.addEventListener('click', addItem);
-
-        ['pp','gp','sp','cp'].forEach(id=>{
-            const el=qs('#'+id);
-            if(el) el.addEventListener('input', updateInventoryTotal);
+        const curHP = qs('#currentHP'); if (curHP) curHP.addEventListener('input', updateHealthBar);
+        const maxHP = qs('#maxHP'); if (maxHP) maxHP.addEventListener('input', updateHealthBar);
+        const newSkillName = qs('#newSkillName'); if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
+        const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
+        const newSpellName = qs('#newSpellName'); if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
+        const addSpellBtn = qs('#addSpellBtn'); if (addSpellBtn) addSpellBtn.addEventListener('click', addSpell);
+        const itemName = qs('#ItemName'); if (itemName) itemName.addEventListener('input', onNewItemNameInput);
+        const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.addEventListener('click', addItem);
+        ['pp','gp','sp','cp'].forEach(id=>{ const el=qs('#'+id); if(el){ restrictToDigitsInput(el); el.addEventListener('input', updateInventoryTotal); } });
+        // restrict add-form numeric fields to digits
+        ['newSpellLevel','newSpellSlots','ItemQuantity','ItemPrice','newSkillBonus'].forEach(id => {
+            const el = qs('#' + id);
+            if (!el) return;
+            restrictToDigitsInput(el);
         });
-
-        const saveBtn = qs('#saveBtn');
-        if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
-        const loadBtn = qs('#loadBtn');
-        if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
-
-        updateStatModifiers();
-        updateHealthBar();
-        renderSkills();
-        renderSpells();
-        renderInventory();
-        updateInventoryTotal();
+        const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
+        const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
+        updateStatModifiers(); updateHealthBar(); renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
     }
 
-    initTabs();
-    initLanguage();
-    wireUp();
-    updateLanguage();
+    initTabs(); initLanguage(); wireUp(); updateLanguage(); applyEditMode();
 
-    // ensure edit mode initial state (HTML starts without readonly)
-    // ---------------- Unified toggle & lang-scroll script ----------------
+    // Ensure mode toggle circles have no stray text (keeps circles perfectly round)
+    qsa('.mode-toggle .circle').forEach(c => { try { c.textContent = ''; } catch(e){} });
 
-    // small helper t for translations
-    function _t(key, fallback){
-      try {
-        if (typeof currentLanguage !== 'undefined' && translations && translations[currentLanguage] && translations[currentLanguage][key]) {
-          return translations[currentLanguage][key];
-        }
-        if (translations && translations['ru'] && translations['ru'][key]) return translations['ru'][key];
-      } catch(e){}
-      return fallback;
+    // ---------- Unified toggles: tooltips, lens, center toast ----------
+    function showCenterToast(text, ms = 1000) {
+        const el = document.createElement('div'); el.className = 'center-toast'; el.textContent = text; document.body.appendChild(el);
+        void el.offsetWidth; el.classList.add('show');
+        setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>{ if (el && el.parentNode) el.parentNode.removeChild(el); },300); }, ms);
+    }
+    function createInlineTooltip(container, text) {
+        let tip = container.querySelector('.inline-tooltip');
+        if (!tip) { tip = document.createElement('div'); tip.className = 'inline-tooltip'; container.appendChild(tip); }
+        tip.textContent = text; return tip;
+    }
+    function moveLensTo(toggleRoot, targetEl) {
+        const lens = toggleRoot.querySelector('.lens'); if (!lens || !targetEl) return;
+        const rootRect = toggleRoot.getBoundingClientRect(); const targetRect = targetEl.getBoundingClientRect();
+        const centerX = (targetRect.left + targetRect.right) / 2 - rootRect.left; const centerY = (targetRect.top + targetRect.bottom) / 2 - rootRect.top;
+        lens.style.left = (centerX - lens.offsetWidth / 2) + 'px'; lens.style.top  = (centerY - lens.offsetHeight / 2) + 'px';
     }
 
-    function showCenterToast(text, ms = 1000){
-      const el = document.createElement('div');
-      el.className = 'center-toast';
-      el.textContent = text;
-      document.body.appendChild(el);
-      requestAnimationFrame(()=> el.classList.add('show'));
-      setTimeout(()=> { el.classList.remove('show'); setTimeout(()=> el.remove(), 240); }, ms);
-    }
-
-    function createInlineTooltip(root, text){
-      let tip = root.querySelector('.inline-tooltip');
-      if (!tip){
-        tip = document.createElement('div');
-        tip.className = 'inline-tooltip';
-        root.appendChild(tip);
-      }
-      tip.textContent = text;
-      return tip;
-    }
-
-    function moveLensTo(root, target){
-      const lens = root.querySelector('.lens');
-      if (!lens || !target) return;
-      const r = root.getBoundingClientRect();
-      const t = target.getBoundingClientRect();
-      const cx = (t.left + t.right)/2 - r.left;
-      const cy = (t.top + t.bottom)/2 - r.top;
-      lens.style.left = (cx - lens.offsetWidth/2) + 'px';
-      lens.style.top  = (cy - lens.offsetHeight/2) + 'px';
-    }
-
-    function updateAddFormsVisibility(isRead) {
-      const addIds = ['#skillsAdd', '#spellsAdd', '#itemsAdd'];
-      addIds.forEach(id => {
-        const el = qs(id);
-        if (!el) return;
-        if (isRead){
-          el.dataset._display = el.style.display || '';
-          el.style.display = 'none';
-          el.setAttribute('aria-hidden','true');
-        } else {
-          const prev = el.dataset._display || '';
-          el.style.display = prev || 'block';
-          el.removeAttribute('aria-hidden');
-        }
-      });
-    }
-
-    // setup mode toggle
+    // ---------- Mode toggle implementation (read/edit) ----------
     (function setupMode(){
       const root = qs('#modeToggle');
       if (!root) return;
       const circles = Array.from(root.querySelectorAll('.circle'));
-      circles.forEach(c => { c.textContent = ''; });
+      const lens = root.querySelector('.lens');
+      circles.forEach(c => { try { c.textContent = ''; c.style.cursor = 'default'; } catch(e){} });
 
-      function setMode(mode, announce = true){
-        root.dataset.state = mode;
-        circles.forEach(c => {
+      // Move lens to a target circle
+      function moveLens(target) {
+        if (!lens || !target) return;
+        const rootRect = root.getBoundingClientRect();
+        const tRect = target.getBoundingClientRect();
+        const cx = (tRect.left + tRect.right)/2 - rootRect.left;
+        const cy = (tRect.top + tRect.bottom)/2 - rootRect.top;
+        lens.style.left = (cx - lens.offsetWidth/2) + 'px';
+        lens.style.top  = (cy - lens.offsetHeight/2) + 'px';
+      }
+
+      function setVisuals(mode){
+        circles.forEach(c=>{
           const m = c.dataset.mode;
           if (m === mode) { c.classList.add('active'); c.classList.remove('inactive'); }
           else { c.classList.remove('active'); c.classList.add('inactive'); }
         });
-        const active = root.querySelector('.circle.active') || circles[0];
-        moveLensTo(root, active);
-
-        const isRead = mode === 'read';
-        if (isRead) document.documentElement.classList.add('readonly');
-        else document.documentElement.classList.remove('readonly');
-
-        updateAddFormsVisibility(isRead);
-
-        if (announce) showCenterToast(isRead ? _t('toastModeRead','Режим чтения') : _t('toastModeEdit','Режим редактирования'), 1000);
+        moveLens(root.querySelector('.circle.active') || circles[0]);
       }
 
-      setMode(root.dataset.state === 'read' ? 'read' : 'edit', false);
+      // show/hide add forms (#skillsAdd, #spellsAdd, #itemsAdd) depending on editable flag
+      function updateAddFormsVisibility(editable){
+        const ids = ['#skillsAdd','#spellsAdd','#itemsAdd'];
+        ids.forEach(sel => {
+          const el = qs(sel);
+          if (!el) return;
+          if (!editable) {
+            if (typeof el.dataset._prevDisplay === 'undefined') el.dataset._prevDisplay = el.style.display || '';
+            el.style.display = 'none';
+            el.setAttribute('aria-hidden','true');
+          } else {
+            const prev = el.dataset._prevDisplay || '';
+            el.style.display = prev || 'block';
+            el.removeAttribute('aria-hidden');
+          }
+        });
+      }
 
-      root.addEventListener('click', ()=>{
-        const newState = (root.dataset.state === 'read') ? 'edit' : 'read';
-        setMode(newState, true);
+      // disable/enable content form controls (except top-right toggles and tabs)
+      function setContentInteractivity(editable){
+        // all inputs, textareas, selects and content buttons
+        const all = Array.from(document.querySelectorAll('input, textarea, select, button'));
+        all.forEach(el=>{
+          // always skip the language and mode toggles and the tabs themselves
+          if (el.closest('#modeToggle') || el.closest('#langScrollToggle') || el.closest('.top-right-controls') || el.closest('.tabs')) return;
+          // For buttons: only toggle buttons that belong to sections or are .btn (content buttons)
+          if (el.tagName.toLowerCase() === 'button') {
+            const isContentBtn = el.classList.contains('btn') || el.closest('.section') || el.closest('#skillsList') || el.closest('#inventoryList') || el.closest('#spellsList') || el.id === 'saveBtn' || el.id === 'loadBtn';
+            if (!isContentBtn) return;
+          }
+          // store original disabled/readOnly/tabindex to restore accurately
+          if (typeof el.dataset._origDisabled === 'undefined') el.dataset._origDisabled = el.disabled ? '1' : '0';
+          if (typeof el.dataset._origReadonly === 'undefined') el.dataset._origReadonly = el.readOnly ? '1' : '0';
+          if (typeof el.dataset._origTabindex === 'undefined') el.dataset._origTabindex = el.getAttribute('tabindex') || '';
+
+          if (editable) {
+            el.disabled = el.dataset._origDisabled === '1';
+            try { el.readOnly = el.dataset._origReadonly === '1'; } catch(e){}
+            if (el.dataset._origTabindex) el.setAttribute('tabindex', el.dataset._origTabindex);
+            else el.removeAttribute('tabindex');
+            el.style.pointerEvents = '';
+          } else {
+            el.disabled = true;
+            try { el.readOnly = true; } catch(e){}
+            el.setAttribute('tabindex', '-1');
+            el.style.pointerEvents = 'none';
+          }
+        });
+
+        // show/hide add forms also
+        updateAddFormsVisibility(editable);
+      }
+
+      function setMode(mode, announce = true){
+        mode = (mode === 'read') ? 'read' : 'edit';
+        root.dataset.state = mode;
+        setVisuals(mode);
+        const editable = mode === 'edit';
+        setContentInteractivity(editable);
+        document.documentElement.classList.toggle('readonly', !editable);
+        if (announce) {
+          const t = translationsObj[currentLanguage] || translations['ru'];
+          const msg = editable ? (t.toastModeEdit || 'Режим редактирования') : (t.toastModeRead || 'Режим чтения');
+          try { showCenterToast(msg, 900); } catch(e) { /* ignore */ }
+        }
+        requestAnimationFrame(()=> moveLens(root.querySelector('.circle.active') || circles[0]));
+      }
+
+      // initial mode from dataset
+      const init = root.dataset.state === 'read' ? 'read' : 'edit';
+      setMode(init, false);
+
+      root.addEventListener('click', (ev)=>{
+        ev.preventDefault();
+        const next = root.dataset.state === 'read' ? 'edit' : 'read';
+        setMode(next, true);
       });
-
-      root.addEventListener('mouseenter', ()=> createInlineTooltip(root, root.dataset.state === 'read' ? _t('modeReadLabel','Режим чтения') : _t('modeEditLabel','Режим редактирования')));
-      root.addEventListener('mouseleave', ()=> { const t = root.querySelector('.inline-tooltip'); if (t) t.remove(); });
-
-      root.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); root.click(); } });
-      window.addEventListener('resize', ()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
-      requestAnimationFrame(()=> moveLensTo(root, root.querySelector('.circle.active') || circles[0]));
+      root.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); root.click(); } });
+      window.addEventListener('resize', ()=> moveLens(root.querySelector('.circle.active') || circles[0]));
+      // ensure lens placed correctly on load
+      requestAnimationFrame(()=> moveLens(root.querySelector('.circle.active') || circles[0]));
+      // expose setter for external calls
+      root.setMode = setMode;
     })();
 
-    // setup language scroll toggle
+    // expose API
+    window.d20 = Object.assign(window.d20 || {}, { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem });
+
+    // autosize notes
+    const notes = document.getElementById('notes'); if (notes){ notes.style.overflow = 'hidden'; notes.style.resize = 'none'; const autoNotes = ()=> autosizeDescription(notes); notes.addEventListener('input', autoNotes); setTimeout(autoNotes, 0); }
+
+    // ---------- Language scroll: replaced implementation (full behavior + animations) ----------
     (function setupLangScroll(){
       const root = qs('#langScrollToggle');
       if (!root) return;
 
-      const posEls = {
-        1: { circle: document.querySelector('.lang-circle[data-pos="1"]'), text: document.querySelector('.lang-text[data-pos="1"]') },
-        2: { circle: document.querySelector('.lang-circle[data-pos="2"]'), text: document.querySelector('.lang-text[data-pos="2"]') },
-        3: { circle: document.querySelector('.lang-circle[data-pos="3"]'), text: document.querySelector('.lang-text[data-pos="3"]') },
-        4: { circle: document.querySelector('.lang-circle[data-pos="4"]'), text: document.querySelector('.lang-text[data-pos="4"]') }
+      // mapping DOM text elements (positions):
+      const domText = {
+        1: qs('#langTextPosCenter'), // pos1 - center big circle (active)
+        2: qs('#langTextPosRight'),  // pos2 - bottom-right
+        3: qs('#langTextPosTop'),    // pos3 - top
+        4: qs('#langTextPosLeft')    // pos4 - bottom-left
       };
-      if (!posEls[1].circle) return;
 
+      // mapping for element centers (we will use the text positions as anchor)
+      function getCenter(el){
+        const r = el.getBoundingClientRect();
+        return { x: r.left + r.width/2, y: r.top + r.height/2 };
+      }
+
+      // initial order: pos1,pos2,pos3,pos4
       let order = ['ru','en','fr','es'];
+
+      // if dataset.selected or currentLanguage present, rotate order so order[0] matches
       try {
-        if (typeof currentLanguage !== 'undefined') {
-          const idx = order.indexOf(currentLanguage);
-          if (idx !== -1) {
-            while (order[0] !== currentLanguage) order = [ order[3], order[0], order[1], order[2] ];
-          }
-        } else if (root.dataset.selected) {
-          const idx = order.indexOf(root.dataset.selected);
-          if (idx !== -1) { while(order[0] !== root.dataset.selected) order = [ order[3], order[0], order[1], order[2] ]; }
-        }
-      } catch(e){}
+        const desired = (typeof currentLanguage !== 'undefined' && currentLanguage) ? currentLanguage : root.dataset.selected || root.getAttribute('data-selected') || 'ru';
+        while(order[0] !== desired) order = [ order[3], order[0], order[1], order[2] ];
+      } catch (e){ /* ignore */ }
 
       const codeLabel = { ru:'RU', en:'EN', fr:'FR', es:'ES' };
 
-      function renderPositions(){
-        for (let i=1;i<=4;i++){
+      // set initial classes (do not alter text styling beyond adding lang-text active/inactive)
+      function renderStatic(){
+        for(let i=1;i<=4;i++){
+          const t = domText[i];
+          if (!t) continue;
           const lang = order[i-1];
-          const el = posEls[i];
-          if (!el) continue;
-          el.text.textContent = codeLabel[lang] || lang.toUpperCase();
-          if (i === 1){
-            el.circle.classList.add('active'); el.circle.classList.remove('inactive');
-            el.text.classList.add('active'); el.text.classList.remove('inactive');
+          t.textContent = codeLabel[lang] || (lang||'').toUpperCase();
+          t.classList.add('lang-text');
+          if (i === 1) {
+            t.classList.add('active'); t.classList.remove('inactive');
           } else {
-            el.circle.classList.remove('active'); el.circle.classList.add('inactive');
-            el.text.classList.remove('active'); el.text.classList.add('inactive');
+            t.classList.remove('active'); t.classList.add('inactive');
           }
         }
-        root.setAttribute('title', _t('langSelectedPrefix','Выбран язык: ') + (order[0] || '').toUpperCase());
         root.dataset.selected = order[0];
       }
 
-      function rotateOnce(){
-        for (let i=1;i<=4;i++) posEls[i].text.classList.add('lang-shift-out');
-
-        setTimeout(()=> {
-          order = [ order[3], order[0], order[1], order[2] ];
-          renderPositions();
-          for (let i=1;i<=4;i++){
-            const t = posEls[i].text;
-            t.classList.remove('lang-shift-out'); t.classList.add('lang-shift-in');
-          }
-          setTimeout(()=> { for (let i=1;i<=4;i++) posEls[i].text.classList.remove('lang-shift-in'); }, 260);
-
-          const newLang = order[0];
-          if (typeof setLanguage === 'function') {
-            try { setLanguage(newLang); } catch(e){}
-          } else if (window.d20 && typeof window.d20.setLanguage === 'function') {
-            try { window.d20.setLanguage(newLang); } catch(e){}
-          } else if (typeof updateLanguage === 'function') {
-            try { window.currentLanguage = newLang; updateLanguage(); } catch(e){}
-          } else {
-            try { window.currentLanguage = newLang; } catch(e){}
-          }
-
-          const prefix = _t('langToastPrefix','Язык: ');
-          showCenterToast(prefix + (newLang||'').toUpperCase(), 900);
-        }, 180);
+      // create floating clone text element (DOM) positioned at center x,y
+      function createFloatingText(label, x, y, size = 14){
+        const el = document.createElement('div');
+        el.className = 'floating-clone';
+        el.style.position = 'fixed';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.transform = 'translate(-50%,-50%)';
+        el.style.pointerEvents = 'none';
+        el.style.zIndex = 9999;
+        el.style.fontFamily = 'Palatino, Georgia, serif';
+        el.style.fontWeight = '700';
+        el.style.fontSize = size + 'px';
+        el.style.color = getComputedStyle(document.body).color || '#000';
+        el.style.transition = `transform 480ms cubic-bezier(.2,.9,.24,1), opacity 360ms ease`;
+        el.textContent = label;
+        document.body.appendChild(el);
+        return el;
       }
 
-      renderPositions();
+      function createFloatingDot(x, y, d = 18){
+        const el = document.createElement('div');
+        el.className = 'floating-dot';
+        el.style.position = 'fixed';
+        el.style.left = (x - d/2) + 'px';
+        el.style.top  = (y - d/2) + 'px';
+        el.style.width = d + 'px';
+        el.style.height = d + 'px';
+        el.style.borderRadius = '50%';
+        el.style.background = '#fff';
+        el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+        el.style.pointerEvents = 'none';
+        el.style.zIndex = 9998;
+        el.style.transition = `transform 480ms cubic-bezier(.2,.9,.24,1), opacity 360ms ease`;
+        document.body.appendChild(el);
+        return el;
+      }
 
+      let animating = false;
+
+      function rotateOnce(){
+        if (animating) return;
+        animating = true;
+
+        try {
+          // capture current screen positions
+          const p = {};
+          for(let i=1;i<=4;i++){
+            const el = domText[i];
+            p[i] = getCenter(el);
+          }
+
+          // old labels
+          const old = {1: order[0], 2: order[1], 3: order[2], 4: order[3]};
+
+          // new order after rotation: newPos1 = oldPos4, newPos2 = oldPos1, newPos3 = oldPos2, newPos4 = oldPos3
+          const newOrder = [ order[3], order[0], order[1], order[2] ];
+
+          // create clones for outgoing (old pos1 -> pos2) and incoming (old pos4 -> pos1)
+          const outLabel = createFloatingText(codeLabel[old[1]] || old[1].toUpperCase(), p[1].x, p[1].y, 16);
+          const outDot   = createFloatingDot(p[1].x, p[1].y, 18);
+
+          const inLabel  = createFloatingText(codeLabel[old[4]] || old[4].toUpperCase(), p[4].x, p[4].y, 12);
+          const inDot    = createFloatingDot(p[4].x, p[4].y, 12);
+          // initial styles for incoming: tiny & transparent
+          inLabel.style.transform = 'translate(-50%,-50%) scale(.6)';
+          inLabel.style.opacity = '0';
+          inDot.style.transform = 'scale(.6)';
+          inDot.style.opacity = '0';
+
+          // fade static labels slightly to avoid duplicate visuals during animation
+          for(let i=1;i<=4;i++){
+            domText[i].style.transition = 'opacity 260ms ease';
+            domText[i].style.opacity = '0.25';
+          }
+
+          // animate outgoing -> pos2 (shrink + fade)
+          requestAnimationFrame(()=> {
+            outLabel.style.transform = `translate(calc(-50% + ${p[2].x - p[1].x}px), calc(-50% + ${p[2].y - p[1].y}px)) scale(.5)`;
+            outLabel.style.opacity = '0';
+            outDot.style.transform = `translate(${p[2].x - p[1].x}px, ${p[2].y - p[1].y}px) scale(.45)`;
+            outDot.style.opacity = '0';
+          });
+
+          // animate incoming -> pos1 (grow + appear) with small delay for overlap
+          setTimeout(()=> {
+            inLabel.style.transform = `translate(calc(-50% + ${p[1].x - p[4].x}px), calc(-50% + ${p[1].y - p[4].y}px)) scale(1.1)`;
+            inLabel.style.opacity = '1';
+            inDot.style.transform = `translate(${p[1].x - p[4].x}px, ${p[1].y - p[4].y}px) scale(1.15)`;
+            inDot.style.opacity = '1';
+          }, 40);
+
+          // after animations finish, update static DOM texts and cleanup
+          const cleanupAfter = 520;
+          setTimeout(()=> {
+            // remove clones
+            try { outLabel.remove(); outDot.remove(); inLabel.remove(); inDot.remove(); } catch(e){}
+            // update order and static labels
+            order = newOrder.slice();
+            for(let i=1;i<=4;i++){
+              const t = domText[i];
+              const lang = order[i-1];
+              t.textContent = codeLabel[lang] || (lang||'').toUpperCase();
+              // reset opacity and classes
+              t.style.opacity = '';
+              t.classList.remove('active','inactive','lang-shift-in','lang-shift-out');
+              t.classList.add('lang-text');
+              if (i===1) { t.classList.add('active'); t.classList.remove('inactive'); } else { t.classList.remove('active'); t.classList.add('inactive'); }
+            }
+            root.dataset.selected = order[0];
+            // attempt to call setLanguage / updateLanguage if available
+            const newLang = order[0];
+            if (typeof setLanguage === 'function') {
+              try { setLanguage(newLang); } catch(e){}
+            } else if (window.d20 && typeof window.d20.setLanguage === 'function') {
+              try { window.d20.setLanguage(newLang); } catch(e){}
+            } else {
+              try { window.currentLanguage = newLang; if (typeof updateLanguage === 'function') updateLanguage(); } catch(e){}
+            }
+            // show toast (safe: use translationsObj if present)
+            const toastPrefix = (translationsObj && translationsObj[currentLanguage] && translationsObj[currentLanguage].langToastPrefix) || 'Язык: ';
+            showCenterToast(toastPrefix + (order[0]||'').toUpperCase(), 900);
+            animating = false;
+          }, cleanupAfter);
+        } catch (err) {
+          // on error ensure we reset state so button doesn't lock
+          for(let i=1;i<=4;i++){
+            if (domText[i]) { domText[i].style.opacity = ''; domText[i].classList.remove('inactive'); domText[i].classList.remove('active'); domText[i].classList.add('lang-text'); }
+          }
+          root.dataset.selected = order[0];
+          animating = false;
+          console.error('rotateOnce error:', err);
+        }
+
+        // safety fallback: ensure animating resets eventually
+        setTimeout(()=> { animating = false; }, 1500);
+      }
+
+      // initialize rendering
+      renderStatic();
+
+      // handlers
       root.addEventListener('click', (ev)=> { ev.preventDefault(); rotateOnce(); });
       root.addEventListener('keydown', (ev)=> { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); rotateOnce(); } });
 
-      root.addEventListener('mouseenter', ()=> createInlineTooltip(root, _t('langSelectedPrefix','Выбран язык: ') + (root.dataset.selected||'').toUpperCase()));
+      // tooltip behavior: include selected language in text
+      root.addEventListener('mouseenter', ()=> {
+        const selected = root.dataset.selected || currentLanguage || 'ru';
+        const langs = { ru: 'RU', en: 'EN', fr: 'FR', es: 'ES' };
+        const prefix = (translationsObj && translationsObj[currentLanguage] && translationsObj[currentLanguage].langSelectedPrefix) || 'Выбран язык: ';
+        createInlineTooltip(root, prefix + (langs[selected] || selected.toUpperCase()));
+      });
       root.addEventListener('mouseleave', ()=> { const tt = root.querySelector('.inline-tooltip'); if (tt) tt.remove(); });
 
+      // expose setter
       window.langScrollSet = function(langCode){
         const idx = order.indexOf(langCode);
         if (idx === -1) return;
-        while (order[0] !== langCode) order = [ order[3], order[0], order[1], order[2] ];
-        renderPositions();
+        while(order[0] !== langCode) order = [ order[3], order[0], order[1], order[2] ];
+        renderStatic();
       };
       window._langScrollState = { getOrder: () => order.slice() };
     })();
 
-    // make notes autosize
-    const notes = document.getElementById('notes');
-    if (notes){
-        notes.style.overflow = 'hidden';
-        notes.style.resize   = 'none';
-        const autoNotes = ()=> autosizeDescription(notes);
-        notes.addEventListener('input', autoNotes);
-        setTimeout(autoNotes, 0);
-    }
-
-    // expose API if needed
-    window.d20 = Object.assign(window.d20 || {}, { character, setLanguage, saveCharacter, loadCharacter, addSkill, addSpell, addItem });
 })();
     </script>
 </body>
