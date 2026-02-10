@@ -197,6 +197,9 @@
           pointer-events: auto;
         }
 
+        /* hide delete micro buttons in read mode */
+        .readonly .btn-danger.btn-micro { display: none !important; }
+
         /* health bar thumb: rectangular grabber */
         .progress-bar {
             width: 100%;
@@ -213,21 +216,38 @@
             top: 0;
             bottom: 0;
             width: 100%;
-            transition: width 0.3s, background-color 0.2s ease;
+            transition: width 0.08s linear, background-color 0.08s linear;
             border-radius: 4px;
             z-index: 1;
         }
-        /* rectangular grabber (hp thumb) */
+        /* rectangular grabber (hp thumb) - height computed dynamically, default fallback */
         .hp-thumb {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             width: 28px;
-            height: 16px;
+            height: 18px; /* will be overridden by JS to be 120% of bar height */
             border-radius: 4px;
             box-shadow: 0 2px 6px rgba(44,24,16,0.25);
             z-index: 2;
-            transition: left 0.28s ease, background-color 0.2s ease;
+            transition: left 0.06s linear, background-color 0.08s linear;
+            pointer-events: all;
+            touch-action: none;
+            display: block;
+            background: var(--color-hp-green);
+        }
+
+        /* minimal-content inputs: shrink to fit content */
+        .compact-min {
+          min-width: 1ch;
+          width: auto;
+          display: inline-block;
+        }
+
+        /* bonus input visual offset to the right */
+        .item-bonus {
+          margin-left: 10px;
+          min-width: 2ch;
         }
 
         /* safety: make room on small screens for controls */
@@ -412,6 +432,8 @@
             box-sizing: border-box;
         }
 
+        /* make notes full width visually (stretches within the section) */
+        #notes { width: 100%; box-sizing: border-box; }
 
         .item-details {
             font-size: 0.85rem;
@@ -786,11 +808,15 @@
       </g>
 
       <!-- метки языков (положение совпадает с кружками) -->
-      <g font-family="Palatino, Georgia, serif" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-size="8">
-        <text id="langTextPosTop" class="lang-text" x="50" y="38">FR</text>
-        <text id="langTextPosCenter" class="lang-text" x="50" y="82">RU</text>
-        <text id="langTextPosLeft" class="lang-text" x="30" y="105">EN</text>
-        <text id="langTextPosRight" class="lang-text" x="70" y="105">ES</text>
+      <g font-family="Palatino, Georgia, serif" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+        <!-- top -->
+        <text id="langTextPosTop" class="lang-text" x="50" y="38" font-size="8">FR</text>
+        <!-- center: doubled size and moved 1 unit lower -->
+        <text id="langTextPosCenter" class="lang-text" x="50" y="83" font-size="16">RU</text>
+        <!-- left -->
+        <text id="langTextPosLeft" class="lang-text" x="30" y="105" font-size="8">EN</text>
+        <!-- right -->
+        <text id="langTextPosRight" class="lang-text" x="70" y="105" font-size="8">ES</text>
       </g>
     </svg>
   </div>
@@ -828,7 +854,7 @@
                 <div style="display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px;">
                     <div class="input-group" style="flex: 1;">
                         <label for="charClass">Класс</label>
-                        <input type="text" id="charClass" placeholder="Воин, бар��, чародей...">
+                        <input type="text" id="charClass" placeholder="Воин, бард, чародей...">
                     </div>
                 </div>
             </div>
@@ -885,24 +911,28 @@
                 <h2>Здоровье и ресурсы</h2>
                 <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
                     <label for="currentHP" style="white-space: nowrap;">Текущее HP</label>
-                    <input type="number" id="currentHP" value="20" min="0" style="width: 80px;">
+                    <!-- user requested: keep this editable in read mode, and type text with digits-only -->
+                    <input type="text" id="currentHP" value="20" inputmode="numeric" class="compact-min" placeholder="0" style="width: 80px;">
                     <label for="maxHP" style="white-space: nowrap;">Максимальное HP</label>
-                    <input type="number" id="maxHP" value="20" min="1" style="width: 80px;">
+                    <!-- changed to text + digits-only -->
+                    <input type="text" id="maxHP" value="20" inputmode="numeric" class="compact-min" placeholder="0" style="width: 80px;">
                 </div>
                 <div class="health-bar" style="margin-bottom: 16px;">
                     <div class="progress-bar" id="hpBarContainer">
                         <div class="progress-fill" id="hpBar" style="width:100%"></div>
-                        <div class="hp-thumb" id="hpThumb" role="presentation" aria-hidden="true"></div>
+                        <div class="hp-thumb" id="hpThumb" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" tabindex="0"></div>
                     </div>
                 </div>
                 <div class="health-display" style="align-items:center;">
                     <div>
                         <label for="armorClass" style="white-space: nowrap;">Класс доспеха</label>
-                        <input type="number" id="armorClass" value="10" min="0" style="width: 80px;">
+                        <!-- changed to text + digits-only -->
+                        <input type="text" id="armorClass" value="10" inputmode="numeric" class="compact-min" placeholder="0" style="width: 80px;">
                     </div>
                     <div>
                         <label for="speed" style="white-space: nowrap;">Скорость</label>
-                        <input type="number" id="speed" value="30" min="0" style="width: 80px;">
+                        <!-- changed to text + digits-only -->
+                        <input type="text" id="speed" value="30" inputmode="numeric" class="compact-min" placeholder="0" style="width: 80px;">
                     </div>
                 </div>
             </div>
@@ -913,7 +943,7 @@
             </div>
 
             <div class="section">
-                <button class="btn" id="saveBtn">Сохранить персонажа</button>
+                <button class="btn" id="saveBtn">Сохранить персо��ажа</button>
                 <button class="btn btn-secondary" id="loadBtn" style="margin-left: 12px;">Загрузить персонажа</button>
             </div>
         </div>
@@ -925,8 +955,8 @@
                 <div id="skillsAdd" style="margin-top:12px;">
                     <input type="text" id="newSkillName" placeholder="Добавить навык">
                     <div id="skillsExtraFields" style="display:none; margin-top:8px;">
-                        <!-- bonus must be text but only digits -->
-                        <input type="text" id="newSkillBonus" placeholder="бонус +0">
+                        <!-- bonus must be text but allow signs and digits -->
+                        <input type="text" id="newSkillBonus" placeholder="бонус +0" class="compact-min">
                         <button class="btn btn-small" id="addSkillBtn">Добавить</button>
                     </div>
                 </div>
@@ -943,10 +973,10 @@
                         <div class="form-row">
                             <div class="inline-input">
                                 <!-- spell level and slots must be text but only digits -->
-                                <input type="text" id="newSpellLevel" placeholder="Уровень заклинания" min="0" max="9">
+                                <input type="text" id="newSpellLevel" placeholder="Уровень заклинания" inputmode="numeric" class="compact-min">
                             </div>
                             <div class="inline-input">
-                                <input type="text" id="newSpellSlots" placeholder="Доступные слоты" min="0">
+                                <input type="text" id="newSpellSlots" placeholder="Доступные слоты" inputmode="numeric" class="compact-min">
                             </div>
                         </div>
                         <div class="input-group">
@@ -968,11 +998,11 @@
                         <div class="form-row">
                             <div class="inline-input">
                                 <!-- quantity must be text digits-only -->
-                                <input type="text" id="ItemQuantity" placeholder="Количество" min="0">
+                                <input type="text" id="ItemQuantity" placeholder="Количество" inputmode="numeric" class="compact-min">
                             </div>
                             <div class="inline-input">
-                                <!-- price must be text digits-only -->
-                                <input type="text" id="ItemPrice" placeholder="Рыночная стоимость" min="0">
+                                <!-- price must be text (no digits-only restriction) -->
+                                <input type="text" id="ItemPrice" placeholder="Рыночная стоимость">
                             </div>
                         </div>
                         <div class="input-group">
@@ -985,19 +1015,19 @@
                     <div class="compact-input">
                         <label for="pp">Платиновые</label>
                         <!-- coins must be text digits-only -->
-                        <input type="text" id="pp" value="0" min="0">
+                        <input type="text" id="pp" value="0" inputmode="numeric" class="compact-min">
                     </div>
                     <div class="compact-input">
                         <label for="gp">Золотые</label>
-                        <input type="text" id="gp" value="0" min="0">
+                        <input type="text" id="gp" value="0" inputmode="numeric" class="compact-min">
                     </div>
                     <div class="compact-input">
                         <label for="sp">Серебряные</label>
-                        <input type="text" id="sp" value="0" min="0">
+                        <input type="text" id="sp" value="0" inputmode="numeric" class="compact-min">
                     </div>
                     <div class="compact-input">
                         <label for="cp">Медные</label>
-                        <input type="text" id="cp" value="0" min="0">
+                        <input type="text" id="cp" value="0" inputmode="numeric" class="compact-min">
                     </div>
                     <div class="compact-input">
                         <label for="inventoryTotal">Общая стоимость инвентаря</label>
@@ -1220,7 +1250,7 @@ const translations = {
         savedMsg: 'Personnage encodé et copié dans le presse-papier!',
         loadedMsg: 'Personnage chargé!',
         errorMsg: 'Erreur de décodage. Vérifiez la chaîne.',
-        loadPrompt: 'Collez les données encodées du personnage:',
+        loadPrompt: 'Collez les données encodées du персонажа:',
         // new keys
         modeReadLabel: 'Mode lecture',
         modeEditLabel: 'Mode édition',
@@ -1400,7 +1430,7 @@ const translations = {
     }
     function updateHealthBar(){
         const cur = parseInt(qs('#currentHP').value) || 0;
-        const max = parseInt(qs('#maxHP').value) || 1;
+        const max = Math.max(1, parseInt(qs('#maxHP').value) || 1);
         const bar = qs('#hpBar');
         const container = qs('#hpBarContainer');
         const thumb = qs('#hpThumb');
@@ -1412,11 +1442,15 @@ const translations = {
         // position thumb centered on the filled edge
         const contRect = container.getBoundingClientRect();
         const thumbW = Math.max(12, Math.min(40, Math.round(contRect.width * 0.06))); // responsive thumb width
+        // thumb height = 120% of bar height (20% thicker)
+        const thumbH = Math.round(contRect.height * 1.2);
         thumb.style.width = thumbW + 'px';
+        thumb.style.height = thumbH + 'px';
         const left = Math.round(ratio * contRect.width - thumbW / 2);
         const clampedLeft = Math.max(0, Math.min(contRect.width - thumbW, left));
         thumb.style.left = clampedLeft + 'px';
         thumb.style.backgroundColor = color;
+        thumb.setAttribute('aria-valuenow', Math.round(ratio * 100));
     }
 
     // Utility: restrict input to digits only (natural numbers)
@@ -1444,6 +1478,30 @@ const translations = {
       });
     }
 
+    // Utility: restrict input to bonus format: digits and + - variants
+    function restrictToBonusInput(el){
+      if (!el) return;
+      const allowedRe = /[0-9+\-\u2013\u2014]/g; // digits and minus/dashes and plus
+      el.addEventListener('input', ()=>{
+        const before = el.value || '';
+        const cleaned = (before.match(allowedRe) || []).join('');
+        if (before !== cleaned) {
+          const pos = (el.selectionStart || 0) - (before.length - cleaned.length);
+          el.value = cleaned;
+          try { el.setSelectionRange(pos, pos); } catch(e){}
+        }
+      });
+      el.addEventListener('paste', (ev)=>{
+        ev.preventDefault();
+        const text = (ev.clipboardData || window.clipboardData).getData('text') || '';
+        const cleaned = (text.match(allowedRe) || []).join('');
+        const start = el.selectionStart || 0;
+        const end = el.selectionEnd || 0;
+        const newVal = el.value.slice(0,start) + cleaned + el.value.slice(end);
+        el.value = (newVal.match(allowedRe) || []).join('');
+      });
+    }
+
     // Render lists (skills / spells / inventory)
     function renderSkills(){
         const container = qs('#skillsList'); container.innerHTML = '';
@@ -1458,9 +1516,9 @@ const translations = {
             const item = document.createElement('div'); item.className = 'item';
             const info = document.createElement('div'); info.className = 'item-info';
             const nameSpan = document.createElement('span'); nameSpan.textContent = s.name; nameSpan.className = 'item-name';
-            const bonusInput = document.createElement('input'); bonusInput.type = 'text'; bonusInput.value = s.bonus || ''; bonusInput.className = 'item-details';
-            // restrict to digits only
-            restrictToDigitsInput(bonusInput);
+            const bonusInput = document.createElement('input'); bonusInput.type = 'text'; bonusInput.value = s.bonus || ''; bonusInput.className = 'item-details item-bonus compact-min';
+            // allow + and - symbols also
+            restrictToBonusInput(bonusInput);
             bonusInput.addEventListener('input', ()=>{ character.skills[idx].bonus = bonusInput.value; });
             info.appendChild(nameSpan); info.appendChild(bonusInput);
             const actions = document.createElement('div'); actions.className = 'item-actions';
@@ -1489,13 +1547,13 @@ const translations = {
             const details = document.createElement('div'); details.className = 'item-details';
             const metaLine = document.createElement('div');
             const lvlSpan = document.createElement('span'); lvlSpan.textContent = levelLabelText + ': ';
-            const lvlInput = document.createElement('input'); lvlInput.type = 'text'; lvlInput.value = (s.level ?? 0).toString(); lvlInput.className = 'item-details'; lvlInput.style.width = '60px';
+            const lvlInput = document.createElement('input'); lvlInput.type = 'text'; lvlInput.value = (s.level ?? 0).toString(); lvlInput.className = 'item-details compact-min'; lvlInput.style.width = '60px';
             // restrict to digits
             restrictToDigitsInput(lvlInput);
             lvlInput.addEventListener('input', ()=>{ const raw = lvlInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].level = Number.isNaN(parsed) ? 0 : parsed; });
             const sepSpan = document.createElement('span'); sepSpan.textContent = ' · ';
             const slotsSpan = document.createElement('span'); slotsSpan.textContent = slotsLabelText + ': ';
-            const slotsInput = document.createElement('input'); slotsInput.type = 'text'; slotsInput.value = (s.slots ?? 0).toString(); slotsInput.className = 'item-details'; slotsInput.style.width = '60px';
+            const slotsInput = document.createElement('input'); slotsInput.type = 'text'; slotsInput.value = (s.slots ?? 0).toString(); slotsInput.className = 'item-details compact-min'; slotsInput.style.width = '60px';
             restrictToDigitsInput(slotsInput);
             slotsInput.addEventListener('input', ()=>{ const raw = slotsInput.value.trim(); const parsed = parseInt(raw, 10); character.spells[idx].slots = Number.isNaN(parsed) ? 0 : parsed; });
             metaLine.appendChild(lvlSpan); metaLine.appendChild(lvlInput); metaLine.appendChild(sepSpan); metaLine.appendChild(slotsSpan); metaLine.appendChild(slotsInput);
@@ -1531,7 +1589,7 @@ const translations = {
             const details = document.createElement('div'); details.className = 'item-details';
             const qtyLine = document.createElement('div');
             const qtyLabelSpan = document.createElement('span'); qtyLabelSpan.textContent = qtyLabelText + ': ';
-            const qtyInput = document.createElement('input'); qtyInput.type  = 'text'; qtyInput.value = (it.quantity ?? 1).toString(); qtyInput.className = 'item-details'; qtyInput.style.width = '70px';
+            const qtyInput = document.createElement('input'); qtyInput.type  = 'text'; qtyInput.value = (it.quantity ?? 1).toString(); qtyInput.className = 'item-details compact-min'; qtyInput.style.width = '70px';
             // restrict qty to digits
             restrictToDigitsInput(qtyInput);
             qtyInput.addEventListener('input', ()=>{ const raw = qtyInput.value.trim(); const parsed = parseInt(raw, 10); character.inventory[idx].quantity = Number.isNaN(parsed) ? 1 : parsed; updateInventoryTotal(); });
@@ -1671,8 +1729,8 @@ const translations = {
     // wire up handlers
     function wireUp(){
         qsa('.stat-value').forEach(inp=> inp.addEventListener('input', updateStatModifiers));
-        const curHP = qs('#currentHP'); if (curHP) curHP.addEventListener('input', updateHealthBar);
-        const maxHP = qs('#maxHP'); if (maxHP) maxHP.addEventListener('input', updateHealthBar);
+        const curHP = qs('#currentHP'); if (curHP) { restrictToDigitsInput(curHP); curHP.addEventListener('input', updateHealthBar); }
+        const maxHP = qs('#maxHP'); if (maxHP) { restrictToDigitsInput(maxHP); maxHP.addEventListener('input', updateHealthBar); }
         const newSkillName = qs('#newSkillName'); if (newSkillName) newSkillName.addEventListener('input', onNewSkillNameInput);
         const addSkillBtn = qs('#addSkillBtn'); if (addSkillBtn) addSkillBtn.addEventListener('click', addSkill);
         const newSpellName = qs('#newSpellName'); if (newSpellName) newSpellName.addEventListener('input', onNewSpellNameInput);
@@ -1680,14 +1738,21 @@ const translations = {
         const itemName = qs('#ItemName'); if (itemName) itemName.addEventListener('input', onNewItemNameInput);
         const addItemBtn = qs('#addItemBtn'); if (addItemBtn) addItemBtn.addEventListener('click', addItem);
         ['pp','gp','sp','cp'].forEach(id=>{ const el=qs('#'+id); if(el){ restrictToDigitsInput(el); el.addEventListener('input', updateInventoryTotal); } });
-        // restrict add-form numeric fields to digits
-        ['newSpellLevel','newSpellSlots','ItemQuantity','ItemPrice','newSkillBonus'].forEach(id => {
+        // restrict add-form numeric fields to digits (note: ItemPrice intentionally NOT restricted)
+        ['newSpellLevel','newSpellSlots','ItemQuantity','currentHP','maxHP','armorClass','speed'].forEach(id => {
             const el = qs('#' + id);
             if (!el) return;
             restrictToDigitsInput(el);
         });
+        // bonus input: allow signs
+        const bonusEl = qs('#newSkillBonus'); if (bonusEl) restrictToBonusInput(bonusEl);
+
         const saveBtn = qs('#saveBtn'); if (saveBtn) saveBtn.addEventListener('click', saveCharacter);
         const loadBtn = qs('#loadBtn'); if (loadBtn) loadBtn.addEventListener('click', loadCharacter);
+
+        // initialize hp thumb drag/interaction
+        initHpThumb();
+
         updateStatModifiers(); updateHealthBar(); renderSkills(); renderSpells(); renderInventory(); updateInventoryTotal();
     }
 
@@ -1767,6 +1832,10 @@ const translations = {
         all.forEach(el=>{
           // always skip the language and mode toggles and the tabs themselves
           if (el.closest('#modeToggle') || el.closest('#langScrollToggle') || el.closest('.top-right-controls') || el.closest('.tabs')) return;
+
+          // KEEP currentHP interactive in read mode per user's request
+          if (el.id === 'currentHP') return;
+
           // For buttons: only toggle buttons that belong to sections or are .btn (content buttons)
           if (el.tagName.toLowerCase() === 'button') {
             const isContentBtn = el.classList.contains('btn') || el.closest('.section') || el.closest('#skillsList') || el.closest('#inventoryList') || el.closest('#spellsList') || el.id === 'saveBtn' || el.id === 'loadBtn';
@@ -1819,6 +1888,16 @@ const translations = {
         const next = root.dataset.state === 'read' ? 'edit' : 'read';
         setMode(next, true);
       });
+
+      // tooltip on hover showing localized mode string
+      root.addEventListener('mouseenter', ()=> {
+        const mode = root.dataset.state === 'read' ? 'read' : 'edit';
+        const t = translationsObj[currentLanguage] || translations['ru'];
+        const text = (mode === 'read') ? (t.modeReadLabel || 'Режим чтения') : (t.modeEditLabel || 'Режим редактирования');
+        createInlineTooltip(root, text);
+      });
+      root.addEventListener('mouseleave', ()=> { const tt = root.querySelector('.inline-tooltip'); if (tt) tt.remove(); });
+
       root.addEventListener('keydown', (ev)=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); root.click(); } });
       window.addEventListener('resize', ()=> moveLens(root.querySelector('.circle.active') || circles[0]));
       // ensure lens placed correctly on load
@@ -1832,6 +1911,72 @@ const translations = {
 
     // autosize notes
     const notes = document.getElementById('notes'); if (notes){ notes.style.overflow = 'hidden'; notes.style.resize = 'none'; const autoNotes = ()=> autosizeDescription(notes); notes.addEventListener('input', autoNotes); setTimeout(autoNotes, 0); }
+
+    // ---------- HP thumb dragging and init ----------
+    function initHpThumb(){
+      const thumb = qs('#hpThumb');
+      const container = qs('#hpBarContainer');
+      const curInput = qs('#currentHP');
+      const maxInput = qs('#maxHP');
+      if (!thumb || !container || !curInput || !maxInput) return;
+
+      function setFromClientX(clientX){
+        const rect = container.getBoundingClientRect();
+        const relative = clientX - rect.left;
+        const ratio = Math.max(0, Math.min(1, relative / rect.width));
+        const max = Math.max(1, parseInt(maxInput.value) || 1);
+        const newVal = Math.round(ratio * max);
+        curInput.value = String(newVal);
+        updateHealthBar();
+      }
+
+      // pointer events (handles mouse & touch)
+      let dragging = false;
+      thumb.addEventListener('pointerdown', (ev)=>{
+        ev.preventDefault();
+        dragging = true;
+        thumb.setPointerCapture(ev.pointerId);
+        setFromClientX(ev.clientX);
+      });
+      window.addEventListener('pointermove', (ev)=>{
+        if (!dragging) return;
+        setFromClientX(ev.clientX);
+      });
+      window.addEventListener('pointerup', (ev)=>{
+        if (!dragging) return;
+        dragging = false;
+        try { thumb.releasePointerCapture(ev.pointerId); } catch(e){}
+      });
+
+      // support keyboard left/right to change hp
+      thumb.addEventListener('keydown', (ev)=>{
+        const cur = Math.max(0, parseInt(qs('#currentHP').value)||0);
+        const max = Math.max(1, parseInt(qs('#maxHP').value)||1);
+        if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          qs('#currentHP').value = String(Math.max(0, cur - 1));
+          updateHealthBar();
+        } else if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          qs('#currentHP').value = String(Math.min(max, cur + 1));
+          updateHealthBar();
+        } else if (ev.key === 'Home') {
+          ev.preventDefault();
+          qs('#currentHP').value = '0'; updateHealthBar();
+        } else if (ev.key === 'End') {
+          ev.preventDefault();
+          qs('#currentHP').value = String(max); updateHealthBar();
+        }
+      });
+
+      // update ARIA
+      const observer = new MutationObserver(()=> {
+        const cur = parseInt(curInput.value)||0;
+        const max = Math.max(1, parseInt(maxInput.value)||1);
+        thumb.setAttribute('aria-valuenow', Math.round((cur/max)*100));
+      });
+      observer.observe(curInput, { attributes: true, childList:false, characterData:false, subtree:false });
+    }
 
     // ---------- Language scroll: replaced implementation (full behavior + animations) ----------
     (function setupLangScroll(){
@@ -1862,6 +2007,14 @@ const translations = {
       } catch (e){ /* ignore */ }
 
       const codeLabel = { ru:'RU', en:'EN', fr:'FR', es:'ES' };
+
+      // localized full language names mapping by interface language (used for center toast)
+      const languageNames = {
+        ru: { ru:'русский', en:'English', fr:'russe', es:'ruso' },
+        en: { ru:'английский', en:'English', fr:'anglais', es:'inglés' },
+        fr: { ru:'французский', en:'French', fr:'français', es:'francés' },
+        es: { ru:'испанский', en:'Spanish', fr:'espagnol', es:'español' }
+      };
 
       // set initial classes (do not alter text styling beyond adding lang-text active/inactive)
       function renderStatic(){
@@ -1999,9 +2152,12 @@ const translations = {
             } else {
               try { window.currentLanguage = newLang; if (typeof updateLanguage === 'function') updateLanguage(); } catch(e){}
             }
-            // show toast (safe: use translationsObj if present)
+            // show toast with full language name in interface language
+            const iface = currentLanguage || 'ru';
+            const namesForIface = languageNames[ newLang ] || languageNames['en'];
+            const display = (namesForIface && namesForIface[iface]) ? namesForIface[iface] : (namesForIface && namesForIface['en']) || (newLang||'').toUpperCase();
             const toastPrefix = (translationsObj && translationsObj[currentLanguage] && translationsObj[currentLanguage].langToastPrefix) || 'Язык: ';
-            showCenterToast(toastPrefix + (order[0]||'').toUpperCase(), 900);
+            showCenterToast(toastPrefix + display, 900);
             animating = false;
           }, cleanupAfter);
         } catch (err) {
@@ -2025,12 +2181,11 @@ const translations = {
       root.addEventListener('click', (ev)=> { ev.preventDefault(); rotateOnce(); });
       root.addEventListener('keydown', (ev)=> { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); rotateOnce(); } });
 
-      // tooltip behavior: include selected language in text
+      // tooltip behavior: show short code like "Язык: RU"
       root.addEventListener('mouseenter', ()=> {
         const selected = root.dataset.selected || currentLanguage || 'ru';
-        const langs = { ru: 'RU', en: 'EN', fr: 'FR', es: 'ES' };
-        const prefix = (translationsObj && translationsObj[currentLanguage] && translationsObj[currentLanguage].langSelectedPrefix) || 'Выбран язык: ';
-        createInlineTooltip(root, prefix + (langs[selected] || selected.toUpperCase()));
+        const prefix = (translationsObj && translationsObj[currentLanguage] && translationsObj[currentLanguage].langToastPrefix) || 'Язык: ';
+        createInlineTooltip(root, prefix + (codeLabel[selected] || selected.toUpperCase()));
       });
       root.addEventListener('mouseleave', ()=> { const tt = root.querySelector('.inline-tooltip'); if (tt) tt.remove(); });
 
